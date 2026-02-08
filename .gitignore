@@ -26,6 +26,9 @@ npm-debug.*
 yarn-debug.*
 yarn-error.*
 
+# firebase
+/scripts/firebaseConfig.js
+
 # macOS
 .DS_Store
 *.pem
