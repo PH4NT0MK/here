@@ -1,5 +1,6 @@
 import { ThemedText } from '@/components/themed-text';
 import { auth } from '@/services/firebaseConfig';
+import { createUserDocument } from '@/services/firestoreService';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { createUserWithEmailAndPassword } from 'firebase/auth';
@@ -12,7 +13,7 @@ export default function SignUp() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  async function handleSignUp() {
+  const handleSignUp = async () => {
     if (!email || !password) {
       setError('Please fill in all fields');
       return;
@@ -20,14 +21,17 @@ export default function SignUp() {
     try {
       setLoading(true);
       setError(null);
-      await createUserWithEmailAndPassword(auth, email, password);
+
+      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      await createUserDocument(userCredential.user);
+
       router.replace('/(main)/today');
     } catch (err: any) {
       setError(err.message);
     } finally {
       setLoading(false);
     }
-  }
+  };
 
   return (
     <View style={{ flex: 1, justifyContent: 'center', paddingHorizontal: 32, backgroundColor: '#fafaf9' }}>

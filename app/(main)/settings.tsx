@@ -1,16 +1,26 @@
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
+import { auth } from '@/services/firebaseConfig';
 import { Ionicons } from '@expo/vector-icons';
-import { useNavigation } from '@react-navigation/native';
+import { router } from 'expo-router';
+import { signOut } from 'firebase/auth';
 import React, { useState } from 'react';
 import { Pressable, ScrollView, Switch, useColorScheme } from 'react-native';
 
 const Settings = () => {
   const colorScheme = useColorScheme();
-  const navigation = useNavigation();
   const [notifications, setNotifications] = useState(true);
   const [checkInReminders, setCheckInReminders] = useState(true);
   const [pixelTheme, setPixelTheme] = useState(false);
+
+  const handleLogout = async () => {
+    try {
+      await signOut(auth);
+      router.replace('/(auth)/sign-in');
+    } catch (err: any) {
+      console.error(err);
+    }
+  };
 
   return (
     <ThemedView style={{ flex: 1, backgroundColor: colorScheme === 'light' ? '#fafaf9' : '#1f1f1f' }}>
@@ -77,7 +87,7 @@ const Settings = () => {
             </Pressable>
 
             {/* Log Out */}
-            <Pressable onPress={() => navigation.navigate('Login' as never)} style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: 16 }}>
+            <Pressable onPress={() => handleLogout()} style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: 16 }}>
               <ThemedView style={{ flexDirection: 'row', alignItems: 'center', gap: 12, backgroundColor: 'transparent' }}>
                 <ThemedView style={{ width: 32, height: 32, borderRadius: 16, backgroundColor: '#fee2e2', alignItems: 'center', justifyContent: 'center' }}>
                   <Ionicons name="log-out-outline" size={16} color="#ef4444" />
