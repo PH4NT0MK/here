@@ -70,12 +70,18 @@ const TimeCapsule = () => {
             <ThemedText style={{ fontSize: 12, fontWeight: '700', color: colorScheme === 'light' ? '#78716c' : '#a1a1aa', textTransform: 'uppercase', letterSpacing: 1 }}>Your Journey</ThemedText>
           </ThemedView>
 
-          <ThemedView style={{ borderLeftWidth: 2, borderLeftColor: colorScheme === 'light' ? '#e7e5e4' : '#3f3f46', paddingLeft: 12 }}>
+          <ThemedView style={{ paddingLeft: 12, position: 'relative' }}>
+            {/* Full vertical line */}
+            <ThemedView style={{ position: 'absolute', left: 6, top: 0, bottom: 0, width: 2, backgroundColor: colorScheme === 'light' ? '#e7e5e4' : '#3f3f46' }} />
+
             {timelineEntries.map((entry) => (
-              <Pressable key={entry.id} onPress={() => navigation.navigate('JournalDetail' as never)} style={{ marginBottom: 24 }}>
-                {/* Timeline Dot */}
-                <ThemedView style={{ position: 'absolute', left: -10, top: 8, width: 12, height: 12, borderRadius: 6, backgroundColor: colorScheme === 'light' ? '#d4d4d8' : '#57534e', borderWidth: 2, borderColor: colorScheme === 'light' ? '#ffffff' : '#1f1f1f' }} />
-                <ThemedView style={{ marginLeft: 12 }}>
+              <Pressable key={entry.id} onPress={() => navigation.navigate('JournalDetail' as never)} style={{ marginBottom: 24, position: 'relative' }}>
+
+                {/* Dot on top of line */}
+                <ThemedView style={{ position: 'absolute', left: -14, top: 3, width: 18, height: 18, borderRadius: 9, backgroundColor: colorScheme === 'light' ? '#d4d4d8' : '#57534e', borderWidth: 2, borderColor: colorScheme === 'light' ? '#ffffff' : '#1f1f1f', zIndex: 10 }} />
+
+                {/* Timeline Content */}
+                <ThemedView style={{ marginLeft: 18, flex: 1 }}>
                   <ThemedView style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 4 }}>
                     <ThemedText style={{ fontSize: 12, fontWeight: '700', color: colorScheme === 'light' ? '#292524' : '#fafafa' }}>{entry.date}</ThemedText>
                     <ThemedText style={{ fontSize: 10, fontWeight: '500', color: colorScheme === 'light' ? '#57534e' : '#10b981', backgroundColor: colorScheme === 'light' ? '#f5f5f4' : '#3f3f46', paddingHorizontal: 4, paddingVertical: 2, borderRadius: 999 }}>{entry.mood}</ThemedText>
