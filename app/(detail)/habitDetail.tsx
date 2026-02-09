@@ -78,6 +78,7 @@ const HabitDetailScreen = () => {
             yAxisThickness={0}
             xAxisThickness={0}
             hideYAxisText
+            xAxisLabelTextStyle={{color: colorScheme === 'light' ? '#3f3f46' : '#e5e5e5'}}
           />
         </ThemedView>
 
