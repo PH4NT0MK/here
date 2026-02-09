@@ -27,7 +27,7 @@ yarn-debug.*
 yarn-error.*
 
 # firebase
-/scripts/firebaseConfig.js
+/services/firebaseConfig.js
 
 # macOS
 .DS_Store
