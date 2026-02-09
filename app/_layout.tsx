@@ -25,12 +25,12 @@
 
 // app/_layout.tsx
 import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
+import * as NavigationBar from 'expo-navigation-bar';
 import { Stack, useRouter } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect } from 'react';
-import { useColorScheme } from 'react-native';
-
+import { Platform, useColorScheme } from 'react-native';
 import { AuthProvider, useAuth } from './context/authContext';
 
 // Keep native splash visible
@@ -40,6 +40,16 @@ const RootNavigation = () => {
   const scheme = useColorScheme();
   const router = useRouter();
   const { user, loading } = useAuth();
+
+  useEffect(() => {
+    if (Platform.OS === 'android') {
+      // Keep nav bar visible
+      NavigationBar.setVisibilityAsync('visible');
+
+      // Set button style: 'dark' for dark icons, 'light' for light icons
+      NavigationBar.setButtonStyleAsync(scheme === 'dark' ? 'light' : 'dark');
+    }
+  }, [scheme]);
 
   useEffect(() => {
     if (loading) {

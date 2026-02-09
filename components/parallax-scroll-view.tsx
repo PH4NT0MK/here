@@ -4,7 +4,7 @@ import Animated, {
   interpolate,
   useAnimatedRef,
   useAnimatedStyle,
-  useScrollOffset,
+  useScrollOffset
 } from 'react-native-reanimated';
 
 import { ThemedView } from '@/components/themed-view';
@@ -38,11 +38,23 @@ export default function ParallaxScrollView({
           ),
         },
         {
-          scale: interpolate(scrollOffset.value, [-HEADER_HEIGHT, 0, HEADER_HEIGHT], [2, 1, 1]),
+          scale: interpolate(
+            scrollOffset.value,
+            [-HEADER_HEIGHT, 0, HEADER_HEIGHT],
+            [2, 1, 1]
+          ),
         },
       ],
+      opacity: interpolate(
+        scrollOffset.value,
+        [0, HEADER_HEIGHT * 0.6],
+        [1, 0],
+        'clamp'
+      ),
+
     };
   });
+
 
   return (
     <Animated.ScrollView
