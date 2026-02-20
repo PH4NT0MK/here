@@ -32,7 +32,6 @@ const HabitDetailScreen = () => {
       : '#e5e5e5', // fallback color
   }));
 
-
   return (
     <ThemedView style={{ flex: 1, backgroundColor: colorScheme === 'light' ? '#fafaf9' : '#1f1f1f', paddingTop: 18 }}>
       {/* Header */}
