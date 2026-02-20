@@ -1,12 +1,15 @@
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from "@/components/themed-view";
+import { addJournalEntry } from '@/services/journal';
 import { truncate } from '@/services/utils';
 import { Ionicons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
 import React, { useRef, useState } from "react";
 import { Pressable, ScrollView, TextInput, useColorScheme } from "react-native";
+import { useAuth } from '../context/authContext';
 
 const NewJournalEntryScreen = () => {
+  const { user } = useAuth();
   const navigation = useNavigation();
   const scheme = useColorScheme();
   const isDark = scheme === "dark";
@@ -17,6 +20,8 @@ const NewJournalEntryScreen = () => {
   const [content, setContent] = useState("");
   const MAX_CHARS = 5000;
   const [charsLeft, setCharsLeft] = useState(MAX_CHARS);
+
+  const [energy, setEnergy] = useState(3);
 
   const handleChangeContent = (text: string) => {
     if (text.length <= MAX_CHARS) {
@@ -61,7 +66,18 @@ const NewJournalEntryScreen = () => {
     setAddingTag(false);
   }
 
-  const handleSave = () => navigation.goBack();
+  const handleSave = async () => {
+    if(!user?.uid) {
+      return
+    }
+    await addJournalEntry(user.uid, {
+      content,
+      tags: selectedTags.map(tag => tag.text),
+      energy,
+    });
+
+    navigation.goBack();
+  }
 
   const now = new Date();
   const timeString = now.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
@@ -134,6 +150,8 @@ const NewJournalEntryScreen = () => {
                 </Pressable>
               </ThemedView>
             )}
+
+            {/* an energy slider - exhausted, tired, neutral, active, energetic */}
           </ScrollView>
         </ThemedView>
 
@@ -155,8 +173,8 @@ const NewJournalEntryScreen = () => {
         </Pressable>
       </ScrollView>
 
-      <ThemedView style={{backgroundColor: 'transparent'}}>
-        <ThemedText style={{ marginLeft: 'auto', padding: 8 }}>
+      <ThemedView style={{ backgroundColor: 'transparent' }}>
+        <ThemedText style={{ marginLeft: 'auto', padding: 8, color: charsLeft <= 500 ? '#cc1818' : isDark ? "#e7e5e4" : "#1c1917" }}>
           {MAX_CHARS - charsLeft} / {MAX_CHARS}
         </ThemedText>
       </ThemedView>

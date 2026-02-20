@@ -1,20 +1,45 @@
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
+import { fetchJournalEntries } from '@/services/journal';
+import { formatJournalDate, truncate } from '@/services/utils';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
-import React from 'react';
+import { router } from 'expo-router';
+import React, { useEffect, useState } from 'react';
 import { Pressable, ScrollView, useColorScheme } from 'react-native';
+import { useAuth } from '../context/authContext';
+
+export type JournalEntry = {
+  id?: string;
+  content: string;
+  tags: string[];
+  energy: number;
+  createdAt: number;
+  updatedAt: number;
+};
 
 const Journal = () => {
+  const { user } = useAuth();
+
   const colorScheme = useColorScheme();
   const navigation = useNavigation();
+  const [journalEntries, setJournalEntrues] = useState([{}] as JournalEntry[]);
+  const [loading, setLoading] = useState(true);
 
-  const entries = [
-    { id: 1, date: 'Today, 2:30 PM', preview: 'Felt really productive this morning. I managed to finish the report...', mood: 'Happy' },
-    { id: 2, date: 'Yesterday, 8:15 PM', preview: 'Went for a run in the park. The sunset was incredible.', mood: 'Calm' },
-    { id: 3, date: 'Feb 2, 2026', preview: 'Lunch with Sarah was great. We talked about our plans for the summer.', mood: 'Excited' },
-    { id: 4, date: 'Jan 28, 2026', preview: 'Feeling a bit tired today. Need to catch up on sleep.', mood: 'Tired' },
-  ];
+  const handleJournalEntries = async () => {
+    if (!user?.uid) {
+      return;
+    }
+    const entries = await fetchJournalEntries(user.uid);
+    console.log(entries);
+
+    setJournalEntrues(entries.entries as JournalEntry[]);
+    setLoading(false);
+  }
+
+  useEffect(() => {
+    handleJournalEntries();
+  }, [user]);
 
   return (
     <ThemedView style={{ flex: 1, backgroundColor: colorScheme === 'light' ? '#fafaf9' : '#1f1f1f' }}>
@@ -47,37 +72,49 @@ const Journal = () => {
 
       {/* Entries */}
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ padding: 24, gap: 16 }}>
-        {entries.map((entry) => (
-          <Pressable
-            key={entry.id}
-            onPress={() => navigation.navigate('JournalDetail' as never)}
-            style={{ backgroundColor: colorScheme === 'light' ? '#ffffff' : '#262626', borderRadius: 16, padding: 20, borderWidth: 1, borderColor: colorScheme === 'light' ? '#e7e5e4' : '#3f3f46' }}
-          >
-            <ThemedView style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8, backgroundColor: 'transparent' }}>
-              <ThemedView style={{ backgroundColor: colorScheme === 'light' ? '#ecfdf5' : '#064e3b', paddingHorizontal: 8, paddingVertical: 4, borderRadius: 6 }}>
-                <ThemedText style={{ fontSize: 12, fontWeight: '600', color: '#10b981' }}>{entry.mood}</ThemedText>
+        {loading ? <></>
+          : journalEntries.map((entry) => (
+            <Pressable
+              key={entry.id}
+              onPress={() => navigation.navigate('JournalDetail' as never)}
+              style={{ backgroundColor: colorScheme === 'light' ? '#ffffff' : '#262626', borderRadius: 16, padding: 20, paddingTop: 12, borderWidth: 1, borderColor: colorScheme === 'light' ? '#e7e5e4' : '#3f3f46' }}
+            >
+              <ThemedView style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8, backgroundColor: 'transparent' }}>
+                <ScrollView
+                  horizontal
+                  showsHorizontalScrollIndicator={false}
+                  contentContainerStyle={{ flexDirection: 'row', gap: 6, backgroundColor: 'transparent', paddingVertical: 4 }}
+                >
+                  {entry.tags.map(tag => (
+                    <ThemedView
+                      key={tag}
+                      style={{ backgroundColor: colorScheme === 'light' ? '#ecfdf5' : '#064e3b', paddingHorizontal: 8, paddingVertical: 2, borderRadius: 6 }}
+                    >
+                      <ThemedText style={{ fontSize: 12, fontWeight: '600', color: '#10b981' }}>{tag}</ThemedText>
+                    </ThemedView>
+                  ))}
+                </ScrollView>
+
+                <ThemedView style={{ flexDirection: 'row', alignItems: 'center', gap: 4, backgroundColor: 'transparent' }}>
+                  <Ionicons name="calendar-outline" size={12} color={colorScheme === 'light' ? '#78716c' : '#a1a1aa'} />
+                  <ThemedText style={{ fontSize: 12, color: colorScheme === 'light' ? '#78716c' : '#a1a1aa' }}>{formatJournalDate(entry.createdAt, true)}</ThemedText>
+                </ThemedView>
               </ThemedView>
 
-              <ThemedView style={{ flexDirection: 'row', alignItems: 'center', gap: 4, backgroundColor: 'transparent' }}>
-                <Ionicons name="calendar-outline" size={12} color={colorScheme === 'light' ? '#78716c' : '#a1a1aa'} />
-                <ThemedText style={{ fontSize: 12, color: colorScheme === 'light' ? '#78716c' : '#a1a1aa' }}>{entry.date}</ThemedText>
-              </ThemedView>
-            </ThemedView>
+              <ThemedText numberOfLines={1} style={{ fontSize: 15, fontWeight: '600', marginBottom: 4 }}>
+                {truncate(entry.content, 24)}
+              </ThemedText>
 
-            <ThemedText numberOfLines={1} style={{ fontSize: 15, fontWeight: '600', marginBottom: 4 }}>
-              {entry.preview}
-            </ThemedText>
-
-            <ThemedText numberOfLines={2} style={{ fontSize: 14, lineHeight: 20, color: colorScheme === 'light' ? '#78716c' : '#a1a1aa' }}>
-              {entry.preview} {entry.preview}
-            </ThemedText>
-          </Pressable>
-        ))}
+              <ThemedText numberOfLines={2} style={{ fontSize: 14, lineHeight: 20, color: colorScheme === 'light' ? '#78716c' : '#a1a1aa' }}>
+                {truncate(entry.content, 56)}
+              </ThemedText>
+            </Pressable>
+          ))}
       </ScrollView>
 
       {/* Floating Action Button */}
       <Pressable
-        onPress={() => navigation.navigate('JournalDetail' as never)}
+        onPress={() => router.push("/(detail)/newJournalEntry")}
         style={{ position: 'absolute', right: 24, bottom: 24, width: 56, height: 56, borderRadius: 28, backgroundColor: colorScheme === 'light' ? '#292524' : '#fafafa', alignItems: 'center', justifyContent: 'center', elevation: 6 }}
       >
         <Ionicons name="add" size={26} color={colorScheme === 'light' ? '#ffffff' : '#1f1f1f'} />
