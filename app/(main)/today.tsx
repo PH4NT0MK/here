@@ -6,10 +6,13 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
 import React, { useState } from 'react';
 import { Dimensions, Image, TouchableOpacity, useColorScheme } from 'react-native';
+import { useAuth } from '../context/authContext';
 
 const HEADER_HEIGHT = 250;
 
 const Today = () => {
+  const { profile } = useAuth();
+
   const [habits, setHabits] = useState([
     { id: 1, title: "Morning Meditation", completed: true, streak: 12 },
     { id: 2, title: "Drink 2L Water", completed: false, streak: 5 },
@@ -41,14 +44,14 @@ const Today = () => {
 
           {/* Gradient fade at the bottom */}
           <LinearGradient
-            colors={['transparent', colorScheme === 'light' ? '#fafaf9' : '#1f1f1f']} // fade to page background
+            colors={['transparent', colorScheme === 'light' ? '#fafaf9' : '#1f1f1f']}
             style={{ position: 'absolute', left: 0, right: 0, bottom: 0, height: 128 }}
           />
 
           {/* Overlay Text */}
           <ThemedView style={{ position: 'absolute', bottom: 64, left: 24, right: 24, backgroundColor: 'transparent' }}>
             <ThemedText style={{ fontSize: 18, fontWeight: '600', color: '#fafaf9', marginBottom: 4 }}>
-              Good Morning, Alex
+              Good Morning{profile?.displayName && `, ${profile.displayName}`}
             </ThemedText>
             <ThemedText style={{ fontSize: 14, color: '#fafaf9' }}>
               {`"Small steps every day lead to big changes."`}

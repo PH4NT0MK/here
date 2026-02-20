@@ -1,6 +1,6 @@
 import { ThemedText } from '@/components/themed-text';
 import { auth } from '@/services/firebaseConfig';
-import { createUserDocument } from '@/services/firestoreService';
+import { createUserDocument } from '@/services/user';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { createUserWithEmailAndPassword } from 'firebase/auth';
