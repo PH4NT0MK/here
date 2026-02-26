@@ -4,21 +4,42 @@ import { ThemedView } from '@/components/themed-view';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Dimensions, Image, TouchableOpacity, useColorScheme } from 'react-native';
 import { useAuth } from '../context/authContext';
 
 const HEADER_HEIGHT = 250;
 
+const defaultQuotes = [
+  'Small steps every day lead to big changes.',
+  'Consistency beats intensity.',
+  'Progress, not perfection.',
+  'Discipline is choosing what you want most over what you want now.',
+  'Your future is built by what you do today.',
+  'Momentum starts with action.',
+  'Effort compounds over time.',
+  'Progress at your own pace is still progress.',
+  'Growth lives outside comfort.',
+  'Patience turns effort into results.',
+  'Habits shape destiny.',
+  'Every repetition strengthens you.',
+  'Focus creates progress.',
+  'Start small, stay steady.',
+  'Change begins the moment you decide.'
+];
+
 const Today = () => {
   const { profile } = useAuth();
 
   const [habits, setHabits] = useState([
-    { id: 1, title: "Morning Meditation", completed: true, streak: 12 },
-    { id: 2, title: "Drink 2L Water", completed: false, streak: 5 },
-    { id: 3, title: "Read 10 Pages", completed: false, streak: 23 },
-    { id: 4, title: "No Sugar", completed: false, streak: 2 },
+    { id: 1, title: 'Morning Meditation', completed: true, streak: 12 },
+    { id: 2, title: 'Drink 2L Water', completed: false, streak: 5 },
+    { id: 3, title: 'Read 10 Pages', completed: false, streak: 23 },
+    { id: 4, title: 'No Sugar', completed: false, streak: 2 },
   ]);
+
+  const [quotes, setQuotes] = useState(defaultQuotes);
+  const [quoteIndex, setQuoteIndex] = useState(0);
 
   const toggleHabit = (id: number) => {
     setHabits(habits.map(h => h.id === id ? { ...h, completed: !h.completed } : h));
@@ -30,6 +51,10 @@ const Today = () => {
   const { width } = Dimensions.get('window');
   const colorScheme = useColorScheme();
 
+  useEffect(() => {
+    setQuoteIndex(Math.floor(Math.random() * quotes.length));
+  }, [quotes]);
+
   return (
     <ParallaxScrollView
       headerBackgroundColor={{ light: '#fafaf9', dark: '#1f1f1f' }}
@@ -39,7 +64,7 @@ const Today = () => {
           <Image
             source={{ uri: 'https://images.unsplash.com/photo-1768822622847-dffee268a9dd?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&w=1080' }}
             style={{ width: width, height: HEADER_HEIGHT, }}
-            resizeMode="cover"
+            resizeMode='cover'
           />
 
           {/* Gradient fade at the bottom */}
@@ -54,7 +79,7 @@ const Today = () => {
               Good Morning{profile?.displayName && `, ${profile.displayName}`}
             </ThemedText>
             <ThemedText style={{ fontSize: 14, color: '#fafaf9' }}>
-              {`"Small steps every day lead to big changes."`}
+              {quotes[quoteIndex]}
             </ThemedText>
           </ThemedView>
         </ThemedView>
@@ -79,7 +104,7 @@ const Today = () => {
             }}
           >
             <ThemedView style={{ width: 40, height: 40, borderRadius: 20, backgroundColor: '#ffe4d5', alignItems: 'center', justifyContent: 'center' }}>
-              <Ionicons name="flame" size={20} color="#f97316" />
+              <Ionicons name='flame' size={20} color='#f97316' />
             </ThemedView>
             <ThemedText style={{ fontSize: 20, fontWeight: '700', color: colorScheme === 'light' ? '#292524' : '#fafaf9' }}>
               47
@@ -170,7 +195,7 @@ const Today = () => {
                     justifyContent: 'center',
                   }}
                 >
-                  {habit.completed && <Ionicons name="checkmark" size={14} color="#ffffff" />}
+                  {habit.completed && <Ionicons name='checkmark' size={14} color='#ffffff' />}
                 </ThemedView>
 
                 <ThemedView style={{ backgroundColor: 'transparent' }}>
@@ -208,7 +233,7 @@ const Today = () => {
           }}
         >
           <ThemedView style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 8, backgroundColor: 'transparent' }}>
-            <Ionicons name="chatbubble-outline" size={18} color="#10b981" />
+            <Ionicons name='chatbubble-outline' size={18} color='#10b981' />
             <ThemedText style={{ fontSize: 10, fontWeight: '700', textTransform: 'uppercase', letterSpacing: 1, color: '#10b981' }}>
               Reflection
             </ThemedText>
