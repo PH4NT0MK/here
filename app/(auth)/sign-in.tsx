@@ -1,17 +1,3 @@
-// import { ThemedText } from "@/components/themed-text";
-// import { ThemedView } from "@/components/themed-view";
-
-// const SignIn = () => {
-
-//   return <>
-//     <ThemedView>
-//       <ThemedThemedText>Glad You{`\'`}re Here </ThemedThemedText>
-//     </ThemedView>
-//   </>
-// };
-
-// export default SignIn;
-
 import { ThemedText } from '@/components/themed-text';
 import { login } from '@/services/firebaseAuth';
 import { Ionicons } from '@expo/vector-icons';
