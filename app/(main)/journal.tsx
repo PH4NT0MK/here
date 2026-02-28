@@ -76,7 +76,12 @@ const Journal = () => {
           : journalEntries.map((entry) => (
             <Pressable
               key={entry.id}
-              onPress={() => navigation.navigate('JournalDetail' as never)}
+              onPress={() => router.push({
+                pathname: "/(detail)/journalEntry",
+                params: {
+                  entryP: JSON.stringify(entry)
+                }
+              })}
               style={{ backgroundColor: colorScheme === 'light' ? '#ffffff' : '#262626', borderRadius: 16, padding: 20, paddingTop: 12, borderWidth: 1, borderColor: colorScheme === 'light' ? '#e7e5e4' : '#3f3f46' }}
             >
               <ThemedView style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8, backgroundColor: 'transparent' }}>
@@ -114,7 +119,12 @@ const Journal = () => {
 
       {/* Floating Action Button */}
       <Pressable
-        onPress={() => router.push("/(detail)/newJournalEntry")}
+        onPress={() => router.push({
+          pathname: "/(detail)/journalEntry",
+          params: {
+            isCreatingP: "true"
+          }
+        })}
         style={{ position: 'absolute', right: 24, bottom: 24, width: 56, height: 56, borderRadius: 28, backgroundColor: colorScheme === 'light' ? '#292524' : '#fafafa', alignItems: 'center', justifyContent: 'center', elevation: 6 }}
       >
         <Ionicons name="add" size={26} color={colorScheme === 'light' ? '#ffffff' : '#1f1f1f'} />
