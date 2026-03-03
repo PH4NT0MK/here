@@ -1,3 +1,4 @@
+import { Spinner } from '@/components/spinner';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { toggleCompleteToday } from '@/services/habit';
@@ -35,6 +36,10 @@ const Habits = () => {
 
     loadHabits();
   }, [user, refreshHabits]);
+
+  if (loading) {
+      return <Spinner />;
+    }
 
   return (
     <ThemedView style={{ flex: 1, backgroundColor: colorScheme === 'light' ? '#fafaf9' : '#1f1f1f' }}>

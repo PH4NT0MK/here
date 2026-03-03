@@ -1,3 +1,4 @@
+import { Spinner } from '@/components/spinner';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { formatJournalDate, truncate } from '@/services/utils';
@@ -30,6 +31,10 @@ const Journal = () => {
 
     init();
   }, [user, entries, fetchInitial]);
+
+  if (loading) {
+    return <Spinner />;
+  }
 
   return (
     <ThemedView style={{ flex: 1, backgroundColor: colorScheme === 'light' ? '#fafaf9' : '#1f1f1f' }}>

@@ -1,4 +1,5 @@
 import ParallaxScrollView from '@/components/parallax-scroll-view';
+import { Spinner } from '@/components/spinner';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { defaultQuotes } from '@/constants/quotes';
@@ -77,6 +78,10 @@ const Today = () => {
   useEffect(() => {
     setProgressValue((habits.filter(h => isCompletedToday(h.completedAt, h.frequency)).length / habits.length) * 100);
   }, [habits]);
+
+  if (loading) {
+    return <Spinner />;
+  }
 
   return (
     <ParallaxScrollView
