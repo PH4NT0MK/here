@@ -10,6 +10,7 @@ type JournalContextType = {
   fetchInitial: (userId: string) => Promise<void>;
   fetchMore: (userId: string) => Promise<void>;
   reset: () => void;
+  setEntries: React.Dispatch<React.SetStateAction<JournalEntry[]>>;
 };
 
 const JournalContext = createContext<JournalContextType>({
@@ -19,6 +20,7 @@ const JournalContext = createContext<JournalContextType>({
   fetchInitial: async () => { },
   fetchMore: async () => { },
   reset: () => { },
+  setEntries: () => {}
 });
 
 export const JournalProvider = ({ children }: { children: ReactNode }) => {
@@ -64,6 +66,7 @@ export const JournalProvider = ({ children }: { children: ReactNode }) => {
         fetchInitial,
         fetchMore,
         reset,
+        setEntries
       }}
     >
       {children}

@@ -17,7 +17,14 @@ export const addJournalEntry = async (
     updatedAt: now,
   });
 
-  return docRef.id;
+  return {
+    id: docRef.id,
+    content: entry.content.trim(),
+    tags: entry.tags,
+    energy: entry.energy,
+    createdAt: now,
+    updatedAt: now,
+  } as JournalEntry;
 };
 
 export const updateJournalEntry = async (

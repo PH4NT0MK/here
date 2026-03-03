@@ -1,6 +1,5 @@
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
-import { fetchJournalEntries } from '@/services/journal';
 import { formatJournalDate, truncate } from '@/services/utils';
 import { JournalEntry } from '@/types/journal';
 import { Ionicons } from '@expo/vector-icons';
@@ -8,29 +7,29 @@ import { router } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import { Pressable, ScrollView, useColorScheme } from 'react-native';
 import { useAuth } from '../context/authContext';
+import { useJournal } from '../context/journalContext';
 
 const Journal = () => {
   const { user } = useAuth();
+  const { entries, fetchInitial } = useJournal();
 
   const colorScheme = useColorScheme();
   const [journalEntries, setJournalEntries] = useState([{}] as JournalEntry[]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!user?.uid) {
-      return;
-    }
+    if (!user?.uid) return;
 
-    const handleJournalEntries = async () => {
-      const entries = await fetchJournalEntries(user.uid);
-      console.log(entries);
-
-      setJournalEntries(entries.entries as JournalEntry[]);
+    const init = async () => {
+      if (!entries || entries.length === 0) {
+        await fetchInitial(user.uid);
+      }
+      setJournalEntries(entries ?? []);
       setLoading(false);
-    }
+    };
 
-    handleJournalEntries();
-  }, [user]);
+    init();
+  }, [user, entries, fetchInitial]);
 
   return (
     <ThemedView style={{ flex: 1, backgroundColor: colorScheme === 'light' ? '#fafaf9' : '#1f1f1f' }}>
@@ -69,9 +68,7 @@ const Journal = () => {
               key={entry.id}
               onPress={() => router.push({
                 pathname: "/(detail)/journalEntry",
-                params: {
-                  entryP: JSON.stringify(entry)
-                }
+                params: { id: entry.id }
               })}
               style={{ backgroundColor: colorScheme === 'light' ? '#ffffff' : '#262626', borderRadius: 16, padding: 20, paddingTop: 12, borderWidth: 1, borderColor: colorScheme === 'light' ? '#e7e5e4' : '#3f3f46' }}
             >

@@ -9,6 +9,7 @@ import { useLocalSearchParams } from 'expo-router';
 import React, { useEffect, useRef, useState } from "react";
 import { Pressable, ScrollView, TextInput, useColorScheme } from "react-native";
 import { useAuth } from '../context/authContext';
+import { useJournal } from '../context/journalContext';
 
 const defaultTags = [
   { text: "happy", isPermanent: true },
@@ -25,8 +26,9 @@ const defaultTags = [
 ];
 
 const JournalEntryScreen = () => {
+  const { id = null } = useLocalSearchParams();
 
-  const { entryP = null, isCreatingP = false, isEditingP = false } = useLocalSearchParams();
+  const { entries, setEntries } = useJournal();
 
   const [entry, setEntry] = useState(null as JournalEntry | null);
   const [isCreating, setIsCreating] = useState(false);
@@ -78,76 +80,85 @@ const JournalEntryScreen = () => {
     }
 
     setAddingTag(false);
-  }
+  };
 
   const handleSave = async () => {
-    if (!user?.uid) {
-      return
-    }
+    if (!user?.uid) return;
+
+    const newEntryData = {
+      content,
+      tags: selectedTags.map(tag => tag.text),
+      energy,
+    };
 
     if (isCreating) {
-      await addJournalEntry(user.uid, {
-        content,
-        tags: selectedTags.map(tag => tag.text),
-        energy,
-      });
+      const newEntry = await addJournalEntry(user.uid, newEntryData);
+
+      setEntries(prev => [
+        { id: newEntry.id, ...newEntryData, createdAt: Date.now(), updatedAt: Date.now() },
+        ...prev,
+      ]);
     }
 
     if (isEditing && entry) {
-      await updateJournalEntry(user.uid, entry.id, {
-        content,
-        tags: selectedTags.map(tag => tag.text),
-        energy,
-      });
+      await updateJournalEntry(user.uid, entry.id, newEntryData);
+
+      setEntries(prev =>
+        prev.map(e =>
+          e.id === entry.id ? { ...e, ...newEntryData, updatedAt: Date.now() } : e
+        )
+      );
     }
 
     navigation.goBack();
-  }
+  };
 
   const now = new Date();
   const timeString = now.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
 
   useEffect(() => {
-    const entry = typeof entryP === "string" ? JSON.parse(entryP) : null;
-    setEntry(entry);
+    if (!id) {
+      setIsCreating(true);
+    } else {
 
-    if (!entry?.tags?.length || !entry) {
-      setContent('');
-      setSelectedTags([]);
-      setTags([...defaultTags]);
-      return;
-    }
+      const entry = entries.find(e => e.id === id);
 
-    setContent(entry.content);
+      if (!entry) {
+        return;
+      }
 
-    setTags(prevTags => {
-      const updatedTags = [...prevTags];
-      const resolvedSelected: { text: string; isPermanent: boolean }[] = [];
+      setEntry(entry);
 
-      entry.tags.forEach((text: string) => {
-        let existing = updatedTags.find(t => t.text === text);
+      if (!entry?.tags?.length) {
+        setContent('');
+        setSelectedTags([]);
+        setTags([...defaultTags]);
+        return;
+      }
 
-        if (!existing) {
-          existing = { text, isPermanent: false };
-          updatedTags.push(existing);
-        }
+      setContent(entry.content);
 
-        resolvedSelected.push(existing);
+      setTags(prevTags => {
+        const updatedTags = [...prevTags];
+        const resolvedSelected: { text: string; isPermanent: boolean }[] = [];
+
+        entry.tags.forEach((text: string) => {
+          let existing = updatedTags.find(t => t.text === text);
+
+          if (!existing) {
+            existing = { text, isPermanent: false };
+            updatedTags.push(existing);
+          }
+
+          resolvedSelected.push(existing);
+        });
+
+        setSelectedTags(resolvedSelected);
+
+        return updatedTags;
       });
-
-      setSelectedTags(resolvedSelected);
-
-      return updatedTags;
-    });
-  }, [entryP]);
-
-  useEffect(() => {
-    setIsCreating(isCreatingP === "true");
-  }, [isCreatingP]);
-
-  useEffect(() => {
-    setIsEditing(isEditingP === "true");
-  }, [isEditingP]);
+    }
+  }, [id, entries]);
 
   return (
     <ThemedView style={{ flex: 1, backgroundColor: isDark ? "#0c0c0c" : "#fafaf9" }}>
