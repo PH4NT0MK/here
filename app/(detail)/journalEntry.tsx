@@ -76,6 +76,7 @@ const JournalEntryScreen = () => {
       setTags(prev => [...prev, newTag]);
       setNewTagText("");
     }
+
     setAddingTag(false);
   }
 
