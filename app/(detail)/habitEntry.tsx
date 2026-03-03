@@ -1,6 +1,7 @@
 import StatCard from "@/components/StatCard";
 import { ThemedText } from "@/components/themed-text";
 import { ThemedView } from "@/components/themed-view";
+import { habitPlaceholders } from "@/constants/habitPlaceholders";
 import { addHabit, toggleCompleteToday, updateHabit } from "@/services/habit";
 import { calculateStreaks } from "@/services/streak";
 import { Habit, HabitFrequency } from "@/types/habit";
@@ -33,6 +34,17 @@ const HabitScreen = () => {
   const [frequency, setFrequency] = useState<HabitFrequency>({
     type: "daily",
   });
+
+  const [placeholder, setPlaceholder] = useState({ title: '', description: '' });
+
+  useEffect(() => {
+    const getRandomHabitPlaceholder = () => {
+      const index = Math.floor(Math.random() * habitPlaceholders.length);
+      return habitPlaceholders[index];
+    };
+
+    setPlaceholder(getRandomHabitPlaceholder());
+  }, []);
 
   const frequencyTypes: HabitFrequency["type"][] = [
     "daily",
@@ -179,7 +191,7 @@ const HabitScreen = () => {
             <TextInput
               value={title}
               onChangeText={setTitle}
-              placeholder="Reading"
+              placeholder={placeholder.title}
               placeholderTextColor={isDark ? "#525252" : "#a8a29e"}
               style={{
                 fontSize: 24,
@@ -204,7 +216,7 @@ const HabitScreen = () => {
             <TextInput
               value={description}
               onChangeText={setDescription}
-              placeholder="Optional description"
+              placeholder={placeholder.description}
               placeholderTextColor={isDark ? "#525252" : "#a8a29e"}
               multiline
               style={{
@@ -244,11 +256,12 @@ const HabitScreen = () => {
                   }
                 }}
                 style={{
+                  flexBasis: '48%', // roughly half of the row minus gap
                   padding: 14,
                   borderRadius: 16,
                   borderWidth: 2,
-                  borderColor:
-                    frequency.type === type ? "#10b981" : "#ddd",
+                  borderColor: frequency.type === type ? "#10b981" : "#ddd",
+                  alignItems: "center", // center text horizontally
                 }}
               >
                 <ThemedText style={{ textTransform: "capitalize" }}>
@@ -260,26 +273,31 @@ const HabitScreen = () => {
 
           {frequency.type === "weekly" && (
             <ThemedView
-              style={{ flexDirection: "row", flexWrap: "wrap", gap: 8, marginTop: 16, backgroundColor: 'transparent' }}
+              style={{
+                flexDirection: "row",
+                flexWrap: "wrap",
+                justifyContent: "center", // center buttons in each row
+                gap: 16, // spacing between buttons
+                marginTop: 16,
+                backgroundColor: "transparent",
+              }}
             >
               {WEEKDAYS.map((day, i) => (
                 <Pressable
                   key={day.short}
-                  onPress={() =>
-                    setFrequency({ type: "weekly", day: i })
-                  }
+                  onPress={() => setFrequency({ type: "weekly", day: i })}
                   style={{
-                    paddingHorizontal: 16,
-                    paddingVertical: 10,
-                    borderRadius: 12,
-                    marginRight: 8,
-                    backgroundColor:
-                      frequency.day === i ? "#10b981" : "#eee",
+                    flexBasis: "28%", // 3–4 per row depending on screen width
+                    paddingVertical: 14, // bigger, easier to tap
+                    borderRadius: 16,
+                    backgroundColor: frequency.day === i ? "#10b981" : "#eee",
+                    alignItems: "center",
                   }}
                 >
                   <ThemedText
                     style={{
                       color: frequency.day === i ? "#fff" : "#000",
+                      fontWeight: "600",
                     }}
                   >
                     {day.short}
@@ -290,27 +308,25 @@ const HabitScreen = () => {
           )}
 
           {frequency.type === "monthly" && (
-            <TextInput
-              keyboardType="number-pad"
-              value={frequency.day.toString()}
-              onChangeText={(t) => {
-                const day = Math.max(
-                  1,
-                  Math.min(31, parseInt(t) || 1)
-                );
-                setFrequency({ type: "monthly", day });
-              }}
-              style={{
-                marginTop: 16,
-                width: 80,
-                padding: 12,
-                borderRadius: 12,
-                textAlign: "center",
-                fontSize: 18,
-                fontWeight: "700",
-                backgroundColor: "#eee",
-              }}
-            />
+            <ThemedView style={{ marginTop: 16, alignItems: "center", backgroundColor: 'transparent' }}>
+              <TextInput
+                keyboardType="number-pad"
+                value={frequency.day.toString()}
+                onChangeText={(t) => {
+                  const day = Math.max(1, Math.min(31, parseInt(t) || 1));
+                  setFrequency({ type: "monthly", day });
+                }}
+                style={{
+                  width: 80,
+                  padding: 12,
+                  borderRadius: 12,
+                  textAlign: "center",
+                  fontSize: 18,
+                  fontWeight: "700",
+                  backgroundColor: "#eee",
+                }}
+              />
+            </ThemedView>
           )}
 
           {frequency.type === "custom" && (
@@ -318,8 +334,10 @@ const HabitScreen = () => {
               style={{
                 flexDirection: "row",
                 flexWrap: "wrap",
-                gap: 8,
+                justifyContent: "center", // center items in each row
+                gap: 16, // spacing between buttons
                 marginTop: 16,
+                backgroundColor: "transparent",
               }}
             >
               {WEEKDAYS.map((day, i) => {
@@ -339,16 +357,14 @@ const HabitScreen = () => {
                       });
                     }}
                     style={{
-                      paddingHorizontal: 16,
-                      paddingVertical: 10,
-                      borderRadius: 12,
-                      backgroundColor:
-                        selected ? "#10b981" : "#eee",
+                      flexBasis: "28%", // adjust this for 3-4 per row; 28% with gap gives a nice fit
+                      paddingVertical: 14, // bigger button
+                      borderRadius: 16,
+                      backgroundColor: selected ? "#10b981" : "#eee",
+                      alignItems: "center",
                     }}
                   >
-                    <ThemedText
-                      style={{ color: selected ? "#fff" : "#000" }}
-                    >
+                    <ThemedText style={{ color: selected ? "#fff" : "#000", fontWeight: "600" }}>
                       {day.short}
                     </ThemedText>
                   </Pressable>
