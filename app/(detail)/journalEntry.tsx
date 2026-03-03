@@ -2,12 +2,12 @@ import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from "@/components/themed-view";
 import { addJournalEntry, updateJournalEntry } from '@/services/journal';
 import { formatJournalDate, truncate } from '@/services/utils';
+import { JournalEntry } from '@/types/journal';
 import { Ionicons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
 import { useLocalSearchParams } from 'expo-router';
 import React, { useEffect, useRef, useState } from "react";
 import { Pressable, ScrollView, TextInput, useColorScheme } from "react-native";
-import { JournalEntry } from '../(main)/journal';
 import { useAuth } from '../context/authContext';
 
 const defaultTags = [

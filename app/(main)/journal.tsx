@@ -2,20 +2,12 @@ import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { fetchJournalEntries } from '@/services/journal';
 import { formatJournalDate, truncate } from '@/services/utils';
+import { JournalEntry } from '@/types/journal';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import { Pressable, ScrollView, useColorScheme } from 'react-native';
 import { useAuth } from '../context/authContext';
-
-export type JournalEntry = {
-  id: string;
-  content: string;
-  tags: string[];
-  energy: number;
-  createdAt: number;
-  updatedAt: number;
-};
 
 const Journal = () => {
   const { user } = useAuth();
