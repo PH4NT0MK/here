@@ -1,12 +1,16 @@
 import ParallaxScrollView from '@/components/parallax-scroll-view';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
+import { toggleCompleteToday } from '@/services/habit';
+import { calculateStreaks, isCompletedToday } from '@/services/streak';
+import { truncate } from '@/services/utils';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import { Dimensions, Image, TouchableOpacity, useColorScheme } from 'react-native';
 import { useAuth } from '../context/authContext';
+import { useHabits } from '../context/habitContext';
 
 const HEADER_HEIGHT = 250;
 
@@ -29,24 +33,37 @@ const defaultQuotes = [
 ];
 
 const Today = () => {
-  const { profile } = useAuth();
+  const { profile, user } = useAuth();
+  const { habits, setHabits, refreshHabits } = useHabits();
 
-  const [habits, setHabits] = useState([
-    { id: 1, title: 'Morning Meditation', completed: true, streak: 12 },
-    { id: 2, title: 'Drink 2L Water', completed: false, streak: 5 },
-    { id: 3, title: 'Read 10 Pages', completed: false, streak: 23 },
-    { id: 4, title: 'No Sugar', completed: false, streak: 2 },
-  ]);
+  const [loading, setLoading] = useState(false);
+
+  const [progressValue, setProgressValue] = useState(0);
 
   const [quotes, setQuotes] = useState(defaultQuotes);
   const [quoteIndex, setQuoteIndex] = useState(0);
 
-  const toggleHabit = (id: number) => {
-    setHabits(habits.map(h => h.id === id ? { ...h, completed: !h.completed } : h));
-  };
+  const toggleHabit = async (habitId: string) => {
+    const habit = habits.find(h => h.id === habitId);
+    if (!habit || !user?.uid) {
+      return;
+    }
 
-  const completedCount = habits.filter(h => h.completed).length;
-  const progress = (completedCount / habits.length) * 100;
+    const updatedCompletedAt = await toggleCompleteToday(user.uid, habitId);
+    if (!updatedCompletedAt) return;
+
+    const { currentStreak, longestStreak } = calculateStreaks(updatedCompletedAt, habit.frequency);
+
+    setHabits(prev =>
+      prev.map(h =>
+        h.id === habitId
+          ? { ...h, completedAt: updatedCompletedAt, currentStreak, longestStreak }
+          : h
+      )
+    );
+
+    setProgressValue((habits.filter(h => isCompletedToday(h.completedAt, h.frequency)).length / habits.length) * 100);
+  };
 
   const { width } = Dimensions.get('window');
   const colorScheme = useColorScheme();
@@ -54,6 +71,29 @@ const Today = () => {
   useEffect(() => {
     setQuoteIndex(Math.floor(Math.random() * quotes.length));
   }, [quotes]);
+
+  useEffect(() => {
+      if (!user?.uid) {
+        return;
+      }
+  
+      const loadHabits = async () => {
+        setLoading(true);
+        try {
+          refreshHabits(user.uid);
+        } catch (err) {
+          console.error("Error fetching habits:", err);
+        } finally {
+          setLoading(false);
+        }
+      };
+  
+      loadHabits();
+    }, [user, refreshHabits]);
+
+    useEffect(() => {
+      setProgressValue((habits.filter(h => isCompletedToday(h.completedAt, h.frequency)).length / habits.length) * 100);
+    }, [habits]);
 
   return (
     <ParallaxScrollView
@@ -147,7 +187,7 @@ const Today = () => {
             </ThemedText>
 
             <ThemedText style={{ fontSize: 20, fontWeight: '700', color: colorScheme === 'light' ? '#292524' : '#fafaf9', marginTop: 4 }}>
-              {Math.round(progress)}%
+              {Math.round(progressValue)}%
             </ThemedText>
 
             <ThemedView
@@ -160,14 +200,17 @@ const Today = () => {
                 overflow: 'hidden',
               }}
             >
-              <ThemedView style={{ width: `${progress}%`, height: '100%', backgroundColor: '#059669', borderRadius: 4 }} />
+              <ThemedView style={{ width: `${progressValue}%`, height: '100%', backgroundColor: '#059669', borderRadius: 4 }} />
             </ThemedView>
           </ThemedView>
         </ThemedView>
 
         {/* Daily Habits */}
         <ThemedView style={{ gap: 12 }}>
-          {habits.map(habit => (
+          {habits.map(habit => {
+            const completedToday = isCompletedToday(habit.completedAt, habit.frequency);
+
+            return (
             <TouchableOpacity
               key={habit.id}
               onPress={() => toggleHabit(habit.id)}
@@ -189,13 +232,13 @@ const Today = () => {
                     height: 24,
                     borderRadius: 12,
                     borderWidth: 2,
-                    borderColor: habit.completed ? '#059669' : colorScheme === 'light' ? '#d6d3d1' : '#525252',
-                    backgroundColor: habit.completed ? '#059669' : 'transparent',
+                    borderColor: completedToday ? '#059669' : colorScheme === 'light' ? '#d6d3d1' : '#525252',
+                    backgroundColor: completedToday ? '#059669' : 'transparent',
                     alignItems: 'center',
                     justifyContent: 'center',
                   }}
                 >
-                  {habit.completed && <Ionicons name='checkmark' size={14} color='#ffffff' />}
+                  {completedToday && <Ionicons name='checkmark' size={14} color='#ffffff' />}
                 </ThemedView>
 
                 <ThemedView style={{ backgroundColor: 'transparent' }}>
@@ -203,23 +246,23 @@ const Today = () => {
                     style={{
                       fontSize: 14,
                       fontWeight: '500',
-                      color: habit.completed
+                      color: completedToday
                         ? '#9ca3af'
                         : colorScheme === 'light'
                           ? '#292524'
                           : '#fafaf9',
-                      textDecorationLine: habit.completed ? 'line-through' : 'none',
+                      textDecorationLine: completedToday ? 'line-through' : 'none',
                     }}
                   >
-                    {habit.title}
+                    {truncate(habit.title, 32)}
                   </ThemedText>
                   <ThemedText style={{ fontSize: 10, color: colorScheme === 'light' ? '#a8a29e' : '#a8a29e' }}>
-                    {habit.streak} day streak
+                    {habit.currentStreak} day streak • {habit.frequency.type}
                   </ThemedText>
                 </ThemedView>
               </ThemedView>
             </TouchableOpacity>
-          ))}
+          )})}
         </ThemedView>
 
         {/* Quick Journal */}
