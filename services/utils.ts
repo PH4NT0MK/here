@@ -1,5 +1,5 @@
 export const truncate = (text: string, maxLength: number) => {
-  return text.length > maxLength ? text.slice(0, maxLength) + "…" : text;
+  return text.length > maxLength ? text.slice(0, maxLength).trim() + "…" : text;
 };
 
 export const formatJournalDate = (ms: number, hour12: boolean = true): string => {

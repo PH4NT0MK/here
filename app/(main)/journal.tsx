@@ -16,18 +16,19 @@ const Journal = () => {
   const [journalEntries, setJournalEntries] = useState([{}] as JournalEntry[]);
   const [loading, setLoading] = useState(true);
 
-  const handleJournalEntries = async () => {
+  useEffect(() => {
     if (!user?.uid) {
       return;
     }
-    const entries = await fetchJournalEntries(user.uid);
-    console.log(entries);
 
-    setJournalEntries(entries.entries as JournalEntry[]);
-    setLoading(false);
-  }
+    const handleJournalEntries = async () => {
+      const entries = await fetchJournalEntries(user.uid);
+      console.log(entries);
 
-  useEffect(() => {
+      setJournalEntries(entries.entries as JournalEntry[]);
+      setLoading(false);
+    }
+
     handleJournalEntries();
   }, [user]);
 

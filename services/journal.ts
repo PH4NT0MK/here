@@ -1,3 +1,4 @@
+import { JournalEntry } from "@/types/journal";
 import { addDoc, collection, deleteDoc, doc, DocumentData, getDocs, limit, orderBy, query, QueryDocumentSnapshot, startAfter, updateDoc } from "firebase/firestore";
 import { db } from "./firebaseConfig";
 
@@ -46,7 +47,7 @@ export const fetchJournalEntries = async (
 
   const snapshot = await getDocs(q);
 
-  const entries = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+  const entries = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })) as JournalEntry[];
   const lastVisible = snapshot.docs[snapshot.docs.length - 1];
 
   return { entries, lastVisible };

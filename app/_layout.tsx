@@ -6,6 +6,8 @@ import { StatusBar } from 'expo-status-bar';
 import { useEffect } from 'react';
 import { Platform, useColorScheme } from 'react-native';
 import { AuthProvider, useAuth } from './context/authContext';
+import { HabitsProvider } from './context/habitContext';
+import { JournalProvider } from './context/journalContext';
 
 SplashScreen.preventAutoHideAsync();
 
@@ -55,7 +57,11 @@ const RootNavigation = () => {
 const RootLayout = () => {
   return (
     <AuthProvider>
-      <RootNavigation />
+      <HabitsProvider>
+        <JournalProvider>
+          <RootNavigation />
+        </JournalProvider>
+      </HabitsProvider>
     </AuthProvider>
   );
 };
