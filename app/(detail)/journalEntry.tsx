@@ -1,5 +1,6 @@
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from "@/components/themed-view";
+import { defaultTags } from '@/constants/tags';
 import { addJournalEntry, updateJournalEntry } from '@/services/journal';
 import { formatJournalDate, truncate } from '@/services/utils';
 import { JournalEntry } from '@/types/journal';
@@ -10,20 +11,6 @@ import React, { useEffect, useRef, useState } from "react";
 import { Pressable, ScrollView, TextInput, useColorScheme } from "react-native";
 import { useAuth } from '../context/authContext';
 import { useJournal } from '../context/journalContext';
-
-const defaultTags = [
-  { text: "happy", isPermanent: true },
-  { text: "anxious", isPermanent: true },
-  { text: "creative", isPermanent: true },
-  { text: "tired", isPermanent: true },
-  { text: "focused", isPermanent: true },
-  { text: "bored", isPermanent: true },
-  { text: "nostalgic", isPermanent: true },
-  { text: "alone", isPermanent: true },
-  { text: "sick", isPermanent: true },
-  { text: "studying", isPermanent: true },
-  { text: "working", isPermanent: true },
-];
 
 const JournalEntryScreen = () => {
   const { id = null } = useLocalSearchParams();
