@@ -1,5 +1,6 @@
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from "@/components/themed-view";
+import { ENERGY_LEVELS } from '@/constants/energyLevels';
 import { defaultTags } from '@/constants/tags';
 import { addJournalEntry, updateJournalEntry } from '@/services/journal';
 import { formatJournalDate, truncate } from '@/services/utils';
@@ -162,12 +163,46 @@ const JournalEntryScreen = () => {
 
         <ThemedText style={{ fontSize: 18, fontWeight: "700", textAlign: 'center' }}>{isCreating ? 'New entry' : truncate(entry?.content ?? '', 24)}</ThemedText>
 
-        <Pressable onPress={() => navigation.goBack()} style={{ padding: 6 }}>
+        <Pressable onPress={() => isEditing ? setIsEditing(false) : navigation.goBack()} style={{ padding: 6 }}>
           <Ionicons name="close" size={24} color={isDark ? "#a8a29e" : "#78716c"} />
         </Pressable>
       </ThemedView>
 
       <ScrollView contentContainerStyle={{ padding: 24, flex: 1 }}>
+
+        {(isEditing || isCreating) && <ThemedView style={{ flexDirection: 'column', gap: 12, marginBottom: 16, backgroundColor: 'transparent' }}>
+          {/* Header */}
+          <ThemedView style={{ flexDirection: 'row', alignItems: 'center', gap: 4, backgroundColor: 'transparent' }}>
+            <Ionicons name="flash" size={14} color={scheme === 'light' ? '#a1a1aa' : '#71717a'} />
+            <ThemedText style={{ fontSize: 12, fontWeight: 'bold', color: scheme === 'light' ? '#a1a1aa' : '#71717a', letterSpacing: 1 }}>
+              ENERGY LEVEL
+            </ThemedText>
+          </ThemedView>
+
+          {/* Scrollable Buttons */}
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ flexDirection: 'row', gap: 8, paddingBottom: 4, margin: 2, paddingRight: 8 }}>
+            {ENERGY_LEVELS.map(level => (
+              <Pressable
+                key={level.value}
+                onPress={() => setEnergy(level.value)}
+                style={{
+                  paddingVertical: 10,
+                  paddingHorizontal: 16,
+                  borderRadius: 24,
+                  borderWidth: 1,
+                  borderColor: energy === level.value ? level.borderColor : scheme === 'light' ? '#e5e7eb' : '#52525b',
+                  backgroundColor: energy === level.value ? level.bgColor : scheme === 'light' ? '#ffffff' : '#1f1f1f',
+                  transform: [{ scale: energy === level.value ? 1.05 : 1 }],
+                }}
+              >
+                <ThemedText style={{ fontSize: 14, fontWeight: '500', color: energy === level.value ? level.textColor : scheme === 'light' ? '#52525b' : '#d4d4d8' }}>
+                  {level.label}
+                </ThemedText>
+              </Pressable>
+            ))}
+          </ScrollView>
+        </ThemedView>}
+
         {/* Tags */}
         <ThemedView style={{ marginBottom: 24, backgroundColor: 'transparent' }}>
           <ThemedText style={{ fontSize: 11, fontWeight: "700", letterSpacing: 1, color: isDark ? "#78716c" : "#a8a29e", marginBottom: 8 }}>
@@ -178,7 +213,7 @@ const JournalEntryScreen = () => {
             style={{ maxHeight: 180, backgroundColor: 'transparent' }}
             contentContainerStyle={{ flexDirection: "row", flexWrap: "wrap", gap: 8 }}
           >
-            {isEditing || isCreating ? tags.map(tag => {
+            {(isEditing || isCreating) ? tags.map(tag => {
               const selected = selectedTags.includes(tag);
               return (
                 <Pressable
@@ -191,11 +226,11 @@ const JournalEntryScreen = () => {
                   </ThemedText>
                 </Pressable>
               );
-            }) : entry?.tags.map(tag => <Pressable
+            }) : entry?.tags && [ENERGY_LEVELS[entry.energy - 1].label, ...entry?.tags].map((tag, i) => <Pressable
               key={tag}
-              style={{ paddingHorizontal: 12, paddingVertical: 6, borderRadius: 999, borderWidth: 1, backgroundColor: isDark ? "#064e3b" : "#d1fae5", borderColor: isDark ? "#047857" : "#a7f3d0" }}
+              style={{ paddingHorizontal: 12, paddingVertical: 6, borderRadius: 999, borderWidth: 1, backgroundColor: i === 0 ? ENERGY_LEVELS[entry.energy - 1].bgColor : isDark ? "#064e3b" : "#d1fae5", borderColor: i === 0 ? ENERGY_LEVELS[entry.energy - 1].borderColor : isDark ? "#047857" : "#a7f3d0" }}
             >
-              <ThemedText style={{ fontSize: 13, fontWeight: "500", color: isDark ? "#d1fae5" : "#065f46" }}>
+              <ThemedText style={{ fontSize: 13, fontWeight: "500", color: i === 0 ? ENERGY_LEVELS[entry.energy - 1].textColor : isDark ? "#d1fae5" : "#065f46" }}>
                 {truncate(tag, 20)}
               </ThemedText>
             </Pressable>)}

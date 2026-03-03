@@ -1,6 +1,7 @@
 import { Spinner } from '@/components/spinner';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
+import { ENERGY_LEVELS } from '@/constants/energyLevels';
 import { formatJournalDate, truncate } from '@/services/utils';
 import { JournalEntry } from '@/types/journal';
 import { Ionicons } from '@expo/vector-icons';
@@ -83,12 +84,12 @@ const Journal = () => {
                   showsHorizontalScrollIndicator={false}
                   contentContainerStyle={{ flexDirection: 'row', gap: 6, backgroundColor: 'transparent', paddingVertical: 4 }}
                 >
-                  {entry.tags.map(tag => (
+                  {entry?.tags && [ENERGY_LEVELS[entry.energy - 1].label, ...entry?.tags].map((tag, i) => (
                     <ThemedView
                       key={tag}
-                      style={{ backgroundColor: colorScheme === 'light' ? '#ecfdf5' : '#064e3b', paddingHorizontal: 8, paddingVertical: 2, borderRadius: 6 }}
+                      style={{ backgroundColor: i === 0 ? ENERGY_LEVELS[entry.energy - 1].bgColor : colorScheme === 'light' ? '#ecfdf5' : '#064e3b', paddingHorizontal: 8, paddingVertical: 2, borderRadius: 6 }}
                     >
-                      <ThemedText style={{ fontSize: 12, fontWeight: '600', color: '#10b981' }}>{tag}</ThemedText>
+                      <ThemedText style={{ fontSize: 12, fontWeight: '600', color: i === 0 ? ENERGY_LEVELS[entry.energy - 1].textColor : '#10b981' }}>{tag}</ThemedText>
                     </ThemedView>
                   ))}
                 </ScrollView>
