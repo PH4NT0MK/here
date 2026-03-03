@@ -1,6 +1,6 @@
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from "@/components/themed-view";
-import { addJournalEntry } from '@/services/journal';
+import { addJournalEntry, updateJournalEntry } from '@/services/journal';
 import { formatJournalDate, truncate } from '@/services/utils';
 import { Ionicons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
@@ -83,11 +83,22 @@ const JournalEntryScreen = () => {
     if (!user?.uid) {
       return
     }
-    await addJournalEntry(user.uid, {
-      content,
-      tags: selectedTags.map(tag => tag.text),
-      energy,
-    });
+
+    if (isCreating) {
+      await addJournalEntry(user.uid, {
+        content,
+        tags: selectedTags.map(tag => tag.text),
+        energy,
+      });
+    }
+
+    if (isEditing && entry) {
+      await updateJournalEntry(user.uid, entry.id, {
+        content,
+        tags: selectedTags.map(tag => tag.text),
+        energy,
+      });
+    }
 
     navigation.goBack();
   }

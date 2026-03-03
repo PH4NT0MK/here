@@ -3,14 +3,13 @@ import { ThemedView } from '@/components/themed-view';
 import { fetchJournalEntries } from '@/services/journal';
 import { formatJournalDate, truncate } from '@/services/utils';
 import { Ionicons } from '@expo/vector-icons';
-import { useNavigation } from '@react-navigation/native';
 import { router } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import { Pressable, ScrollView, useColorScheme } from 'react-native';
 import { useAuth } from '../context/authContext';
 
 export type JournalEntry = {
-  id?: string;
+  id: string;
   content: string;
   tags: string[];
   energy: number;
@@ -22,8 +21,7 @@ const Journal = () => {
   const { user } = useAuth();
 
   const colorScheme = useColorScheme();
-  const navigation = useNavigation();
-  const [journalEntries, setJournalEntrues] = useState([{}] as JournalEntry[]);
+  const [journalEntries, setJournalEntries] = useState([{}] as JournalEntry[]);
   const [loading, setLoading] = useState(true);
 
   const handleJournalEntries = async () => {
@@ -33,7 +31,7 @@ const Journal = () => {
     const entries = await fetchJournalEntries(user.uid);
     console.log(entries);
 
-    setJournalEntrues(entries.entries as JournalEntry[]);
+    setJournalEntries(entries.entries as JournalEntry[]);
     setLoading(false);
   }
 
@@ -100,7 +98,7 @@ const Journal = () => {
                   ))}
                 </ScrollView>
 
-                <ThemedView style={{ flexDirection: 'row', alignItems: 'center', gap: 4, backgroundColor: 'transparent' }}>
+                <ThemedView style={{ flexDirection: 'row', alignItems: 'center', gap: 4, backgroundColor: 'transparent', marginLeft: 6 }}>
                   <Ionicons name="calendar-outline" size={12} color={colorScheme === 'light' ? '#78716c' : '#a1a1aa'} />
                   <ThemedText style={{ fontSize: 12, color: colorScheme === 'light' ? '#78716c' : '#a1a1aa' }}>{formatJournalDate(entry.createdAt, true)}</ThemedText>
                 </ThemedView>
