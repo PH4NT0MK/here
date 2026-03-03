@@ -2,21 +2,20 @@ import { Spinner } from '@/components/spinner';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { ENERGY_LEVELS } from '@/constants/energyLevels';
-import { getEnergyData } from '@/services/energyData';
+import { EnergyFrequency, getEnergyFrequency } from '@/services/energyFrequency';
+import { getTagFrequency, TagFrequency } from '@/services/tagFrequency';
 import { formatJournalDate } from '@/services/utils';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import React, { useEffect, useState } from 'react';
-import { Dimensions, FlatList, Pressable, ScrollView, useColorScheme } from 'react-native';
-import { LineChart } from 'react-native-gifted-charts';
+import { FlatList, Pressable, ScrollView, useColorScheme } from 'react-native';
+import { BarChart } from 'react-native-gifted-charts';
 import { useAuth } from '../context/authContext';
 import { useJournal } from '../context/journalContext';
 
 const TimeCapsule = () => {
   const { user } = useAuth();
   const { entries, fetchInitial } = useJournal();
-
-  const screenWidth = Dimensions.get('window').width;
 
   const [loading, setLoading] = useState(true);
 
@@ -52,21 +51,36 @@ const TimeCapsule = () => {
     { id: 'favourites', label: 'Favourites', icon: 'heart-outline' }
   ];
 
-  const [timeRange, setTimeRange] = useState<'week' | 'month' | 'year'>('week');
   const levels = ['', 'Exhausted', 'Tired', 'Neutral', 'Active', 'Energetic'];
 
-  type EnergyDataPoint = { value: number; label: string };
-
-  const [energyData, setEnergyData] = useState<EnergyDataPoint[]>([]);
-  const chartPadding = 0.2;
+  const [energyData, setEnergyData] = useState<EnergyFrequency[]>([]);
+  const [tagData, setTagData] = useState<TagFrequency[]>([]);
+  const [maxValue, setMaxValue] = useState(5);
+  const [loadingChart, setLoadingChart] = useState(true);
 
   useEffect(() => {
-    if (tab !== 'energy') {
-      return;
-    }
+    if (!user?.uid) return;
 
-    setEnergyData(getEnergyData(entries, timeRange));
-  }, [tab, entries, timeRange]);
+    const fetchEnergyData = async () => {
+      setLoadingChart(true);
+
+      if (tab === 'energy') {
+        const energy = await getEnergyFrequency(user.uid);
+        setEnergyData(energy);
+        setMaxValue(energy.length ? Math.max(...energy.map(t => t.count)) : 0);
+      }
+
+      if (tab === 'tags') {
+        const tags = await getTagFrequency(user.uid);
+        setTagData(tags);
+        setMaxValue(tags.length ? Math.max(...tags.map(t => t.count)) : 0);
+      }
+
+      setLoadingChart(false);
+    };
+
+    fetchEnergyData();
+  }, [tab, entries, user?.uid]);
 
   if (loading) {
     return <Spinner />;
@@ -149,7 +163,7 @@ const TimeCapsule = () => {
               {entries.map((entry) => (
                 <ThemedView
                   key={entry.id}
-                  style={{ marginBottom: 24, position: 'relative' }}
+                  style={{ marginBottom: 24, position: 'relative', backgroundColor: 'transparent' }}
                 >
 
                   {/* Dot on top of line */}
@@ -219,57 +233,168 @@ const TimeCapsule = () => {
             {/* Header */}
             <ThemedView style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 16, backgroundColor: 'transparent' }}>
               <Ionicons name="flash" size={18} color="#10b981" />
-              <ThemedText style={{ fontWeight: '700', fontSize: 16, marginLeft: 8, color: colorScheme === 'light' ? '#292524' : '#fafafa' }}>
+              <ThemedText style={{ fontWeight: '700', fontSize: 18, marginLeft: 8, color: colorScheme === 'light' ? '#292524' : '#fafafa' }}>
                 Energy Levels
               </ThemedText>
             </ThemedView>
 
-            {/* Time Filter */}
-            <ThemedView style={{ flexDirection: 'row', marginBottom: 24, backgroundColor: 'transparent' }}>
-              {(['week', 'month', 'year'] as const).map((range) => (
-                <Pressable
-                  key={range}
-                  onPress={() => setTimeRange(range)}
-                  style={{ paddingHorizontal: 16, paddingVertical: 8, borderRadius: 12, marginRight: 8, backgroundColor: timeRange === range ? '#10b981' : colorScheme === 'light' ? '#ffffff' : '#262626', borderWidth: timeRange === range ? 0 : 1, borderColor: colorScheme === 'light' ? '#e7e5e4' : '#3f3f46' }}
-                >
-                  <ThemedText style={{ fontSize: 13, fontWeight: '600', color: timeRange === range ? '#ffffff' : colorScheme === 'light' ? '#57534e' : '#d4d4d8' }}>
-                    {range.charAt(0).toUpperCase() + range.slice(1)}
-                  </ThemedText>
-                </Pressable>
-              ))}
-            </ThemedView>
-
             {/* Chart Card */}
-            <ThemedView style={{ backgroundColor: colorScheme === 'light' ? '#ffffff' : '#262626', paddingVertical: 12, borderRadius: 24, borderWidth: 1, borderColor: colorScheme === 'light' ? '#e7e5e4' : '#3f3f46', alignItems: 'center' }}>
+            <ThemedView style={{ backgroundColor: colorScheme === 'light' ? '#ffffff' : '#262626', marginBottom: 24, paddingVertical: 12, borderRadius: 24, borderWidth: 1, borderColor: colorScheme === 'light' ? '#e7e5e4' : '#3f3f46', alignItems: 'center' }}>
               <ThemedView
                 style={{ alignSelf: 'center', backgroundColor: 'transparent' }}
               >
-                <LineChart
-                  key={timeRange}
-                  data={energyData.map(item => ({ label: timeRange === 'year' ? item.label[0] + item.label[1] : item.label , value: item.value + chartPadding, dataPointColor: '#10b981' }))}
-                  thickness={3}
-                  color="#10b981"
-                  height={180}
-                  width={300}
-                  spacing={(screenWidth - 140) / energyData.length}
-                  initialSpacing={16}
-                  maxValue={5}
-                  noOfSections={5}
+                {loadingChart ? <Spinner /> : <BarChart
+                  data={energyData.map(item => ({
+                    value: item.count,
+                    label: levels[item.value][0] + levels[item.value][1],
+                    frontColor: item.count > 0 ? '#10b981' : colorScheme === 'light' ? '#e5e5e5' : '#3f3f46',
+                  }))}
+                  barWidth={20}
+                  barBorderRadius={4}
+                  maxValue={maxValue}
+                  noOfSections={maxValue < 5 ? maxValue : 5}
+                  spacing={16}
+                  height={160}
                   hideRules
-                  // rulesColor={colorScheme === 'light' ? 'rgba(120,113,108,0.2)' : 'rgba(161,161,170,0.2)'} 
+                  rulesColor={colorScheme === 'light' ? 'rgba(0,0,0,0.05)' : 'rgba(255,255,255,0.1)'}
                   yAxisThickness={0}
                   xAxisThickness={0}
-                  yAxisLabelTexts={levels}
-                  yAxisLabelWidth={58}
                   yAxisTextStyle={{ color: colorScheme === 'light' ? '#78716c' : '#a1a1aa', fontSize: 12 }}
                   xAxisLabelTextStyle={{ color: colorScheme === 'light' ? '#78716c' : '#a1a1aa' }}
-                  dataPointsRadius={5}
-                  isAnimated
-                  curved
-                />
+                />}
               </ThemedView>
             </ThemedView>
 
+            <ThemedView style={{ gap: 12, backgroundColor: 'transparent' }}>
+              {energyData.map((item) => (
+                <ThemedView
+                  key={item.value}
+                  style={{
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    backgroundColor: colorScheme === 'light' ? '#ffffff' : '#262626',
+                    padding: 16,
+                    borderRadius: 16,
+                    borderWidth: 1,
+                    borderColor: colorScheme === 'light' ? '#e7e5e4' : '#3f3f46',
+                  }}
+                >
+                  <ThemedView style={{ flexDirection: 'row', alignItems: 'center', gap: 12, backgroundColor: 'transparent' }}>
+                    <ThemedView
+                      style={{
+                        width: 32,
+                        height: 32,
+                        borderRadius: 16,
+                        backgroundColor: '#d1fae5',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                      }}
+                    >
+                      <ThemedText style={{ fontSize: 12, fontWeight: '700', color: '#065f46', backgroundColor: 'transparent' }}>
+                        {item.value}
+                      </ThemedText>
+                    </ThemedView>
+                    <ThemedText style={{ fontSize: 14, fontWeight: '500', color: colorScheme === 'light' ? '#1c1917' : '#fafafa', backgroundColor: 'transparent' }}>
+                      {/* Optional: you can put a label like 'Energy' or leave blank */}
+                      Energy
+                    </ThemedText>
+                  </ThemedView>
+                  <ThemedText style={{ fontSize: 12, fontWeight: '700', color: '#10b981' }}>
+                    {item.count}×
+                  </ThemedText>
+                </ThemedView>
+              ))}
+            </ThemedView>
+
+          </ScrollView>
+        )}
+
+        {tab === 'tags' && (
+          <ScrollView contentContainerStyle={{ padding: 24 }}>
+            <ThemedView style={{ marginBottom: 24, backgroundColor: 'transparent' }}>
+              {/* Header */}
+              <ThemedView style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 16, backgroundColor: 'transparent' }}>
+                <Ionicons name="pricetag-outline" size={20} color={colorScheme === 'light' ? '#10b981' : '#22c55e'} />
+                <ThemedText style={{ fontWeight: '700', fontSize: 18, color: colorScheme === 'light' ? '#1c1917' : '#fafafa' }}>
+                  Tag Frequency
+                </ThemedText>
+              </ThemedView>
+
+              {/* Bar Chart */}
+              <ThemedView
+                style={{
+                  backgroundColor: colorScheme === 'light' ? '#ffffff' : '#262626',
+                  padding: 16,
+                  borderRadius: 24,
+                  borderWidth: 1,
+                  borderColor: colorScheme === 'light' ? '#e7e5e4' : '#3f3f46',
+                  marginBottom: 24,
+                }}
+              >
+                <ThemedView
+                  style={{ alignSelf: 'center', backgroundColor: 'transparent' }}
+                >
+                  {loadingChart ? <Spinner /> : <BarChart
+                    data={tagData.map(item => ({
+                      value: item.count,
+                      label: item.tag[0] + item.tag[1],
+                      frontColor: item.count > 0 ? '#10b981' : colorScheme === 'light' ? '#e5e5e5' : '#3f3f46',
+                    }))}
+                    barWidth={20}
+                    barBorderRadius={4}
+                    maxValue={maxValue}
+                    noOfSections={maxValue < 5 ? maxValue : 5}
+                    spacing={16}
+                    height={160}
+                    hideRules
+                    rulesColor={colorScheme === 'light' ? 'rgba(0,0,0,0.05)' : 'rgba(255,255,255,0.1)'}
+                    yAxisThickness={0}
+                    xAxisThickness={0}
+                    yAxisTextStyle={{ color: colorScheme === 'light' ? '#78716c' : '#a1a1aa', fontSize: 12 }}
+                    xAxisLabelTextStyle={{ color: colorScheme === 'light' ? '#78716c' : '#a1a1aa' }}
+                  />}
+                </ThemedView>
+              </ThemedView>
+
+              {/* Tag List */}
+              <ThemedView style={{ gap: 12, backgroundColor: 'transparent' }}>
+                {tagData.map((tag, index) => (
+                  <ThemedView
+                    key={tag.tag}
+                    style={{
+                      flexDirection: 'row',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      backgroundColor: colorScheme === 'light' ? '#ffffff' : '#262626',
+                      padding: 16,
+                      borderRadius: 16,
+                      borderWidth: 1,
+                      borderColor: colorScheme === 'light' ? '#e7e5e4' : '#3f3f46',
+                    }}
+                  >
+                    <ThemedView style={{ flexDirection: 'row', alignItems: 'center', gap: 12, backgroundColor: 'transparent' }}>
+                      <ThemedView
+                        style={{
+                          width: 32,
+                          height: 32,
+                          borderRadius: 16,
+                          backgroundColor: '#d1fae5',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                        }}
+                      >
+                        <ThemedText style={{ fontSize: 12, fontWeight: '700', color: '#065f46', backgroundColor: 'transparent' }}>{index + 1}</ThemedText>
+                      </ThemedView>
+                      <ThemedText style={{ fontSize: 14, fontWeight: '500', color: colorScheme === 'light' ? '#1c1917' : '#fafafa', backgroundColor: 'transparent' }}>
+                        {tag.tag}
+                      </ThemedText>
+                    </ThemedView>
+                    <ThemedText style={{ fontSize: 12, fontWeight: '700', color: '#10b981' }}>{tag.count}×</ThemedText>
+                  </ThemedView>
+                ))}
+              </ThemedView>
+            </ThemedView>
           </ScrollView>
         )}
 
