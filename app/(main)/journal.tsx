@@ -11,8 +11,8 @@ import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { useEffect, useRef, useState } from 'react';
 import { Alert, Pressable, ScrollView, useColorScheme } from 'react-native';
-import { useAuth } from '../context/authContext';
-import { useJournal } from '../context/journalContext';
+import { useAuth } from '../../context/authContext';
+import { useJournal } from '../../context/journalContext';
 
 const Journal = () => {
   const { user } = useAuth();

@@ -12,8 +12,8 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import { Dimensions, Image, TouchableOpacity, useColorScheme } from 'react-native';
-import { useAuth } from '../context/authContext';
-import { useHabits } from '../context/habitContext';
+import { useAuth } from '../../context/authContext';
+import { useHabits } from '../../context/habitContext';
 
 const HEADER_HEIGHT = 250;
 

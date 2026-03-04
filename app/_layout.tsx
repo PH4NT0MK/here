@@ -5,9 +5,9 @@ import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect } from 'react';
 import { Platform, useColorScheme } from 'react-native';
-import { AuthProvider, useAuth } from './context/authContext';
-import { HabitsProvider } from './context/habitContext';
-import { JournalProvider } from './context/journalContext';
+import { AuthProvider, useAuth } from '../context/authContext';
+import { HabitsProvider } from '../context/habitContext';
+import { JournalProvider } from '../context/journalContext';
 
 SplashScreen.preventAutoHideAsync();
 

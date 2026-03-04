@@ -10,8 +10,8 @@ import { useNavigation } from "@react-navigation/native";
 import { useLocalSearchParams } from 'expo-router';
 import React, { useEffect, useRef, useState } from "react";
 import { Pressable, ScrollView, TextInput, useColorScheme } from "react-native";
-import { useAuth } from '../context/authContext';
-import { useJournal } from '../context/journalContext';
+import { useAuth } from '../../context/authContext';
+import { useJournal } from '../../context/journalContext';
 
 const JournalEntryScreen = () => {
   const { id = null } = useLocalSearchParams();

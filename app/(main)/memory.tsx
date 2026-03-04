@@ -12,8 +12,8 @@ import { router } from 'expo-router';
 import React, { useEffect, useRef, useState } from 'react';
 import { Alert, Pressable, ScrollView, useColorScheme } from 'react-native';
 import { BarChart } from 'react-native-gifted-charts';
-import { useAuth } from '../context/authContext';
-import { useJournal } from '../context/journalContext';
+import { useAuth } from '../../context/authContext';
+import { useJournal } from '../../context/journalContext';
 
 const TimeCapsule = () => {
   const { user } = useAuth();

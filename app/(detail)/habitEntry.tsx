@@ -10,8 +10,8 @@ import { useLocalSearchParams, useNavigation } from "expo-router";
 import React, { useEffect, useState } from "react";
 import { Pressable, ScrollView, TextInput, useColorScheme, } from "react-native";
 import { BarChart } from "react-native-gifted-charts";
-import { useAuth } from "../context/authContext";
-import { useHabits } from "../context/habitContext";
+import { useAuth } from "../../context/authContext";
+import { useHabits } from "../../context/habitContext";
 
 const HabitScreen = () => {
   const { user } = useAuth();
