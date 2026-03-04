@@ -246,7 +246,7 @@ const TimeCapsule = () => {
                 {loadingChart ? <Spinner /> : <BarChart
                   data={energyData.map(item => ({
                     value: item.count,
-                    label: levels[item.value][0] + levels[item.value][1],
+                    label: levels[item.value].slice(0, 4),
                     frontColor: item.count > 0 ? '#10b981' : colorScheme === 'light' ? '#e5e5e5' : '#3f3f46',
                   }))}
                   barWidth={20}
@@ -296,8 +296,7 @@ const TimeCapsule = () => {
                       </ThemedText>
                     </ThemedView>
                     <ThemedText style={{ fontSize: 14, fontWeight: '500', color: colorScheme === 'light' ? '#1c1917' : '#fafafa', backgroundColor: 'transparent' }}>
-                      {/* Optional: you can put a label like 'Energy' or leave blank */}
-                      Energy
+                      {levels[item.value]}
                     </ThemedText>
                   </ThemedView>
                   <ThemedText style={{ fontSize: 12, fontWeight: '700', color: '#10b981' }}>
@@ -338,7 +337,7 @@ const TimeCapsule = () => {
                   {loadingChart ? <Spinner /> : <BarChart
                     data={tagData.map(item => ({
                       value: item.count,
-                      label: item.tag[0] + item.tag[1],
+                      label: item.tag.slice(0, 4),
                       frontColor: item.count > 0 ? '#10b981' : colorScheme === 'light' ? '#e5e5e5' : '#3f3f46',
                     }))}
                     barWidth={20}
