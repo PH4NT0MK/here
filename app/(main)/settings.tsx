@@ -3,11 +3,11 @@ import { ThemedView } from '@/components/themed-view';
 import { saveCoverImage } from '@/services/customPhoto';
 import { auth } from '@/services/firebaseConfig';
 import { Ionicons } from '@expo/vector-icons';
+import * as ImagePicker from 'expo-image-picker';
 import { router } from 'expo-router';
 import { signOut } from 'firebase/auth';
 import React, { useState } from 'react';
 import { Pressable, ScrollView, Switch, useColorScheme } from 'react-native';
-import { launchImageLibrary } from 'react-native-image-picker';
 
 const Settings = () => {
   const colorScheme = useColorScheme();
@@ -25,10 +25,20 @@ const Settings = () => {
   };
 
   const pickImage = async () => {
-    const result = await launchImageLibrary({ mediaType: 'photo', selectionLimit: 1 });
-    if (result.assets && result.assets.length > 0) {
-      const uri = result.assets[0].uri;
-      return uri;
+    const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (!permissionResult.granted) {
+      console.log('Permission to access media library denied');
+      return null;
+    }
+
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: 'images',
+      allowsEditing: true,
+      quality: 1,
+    });
+
+    if (!result.canceled && result.assets && result.assets.length > 0) {
+      return result.assets[0].uri;
     }
 
     return null;

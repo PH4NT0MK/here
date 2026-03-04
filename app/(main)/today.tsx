@@ -3,6 +3,7 @@ import { Spinner } from '@/components/spinner';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { defaultQuotes } from '@/constants/quotes';
+import { getCoverImage } from '@/services/customPhoto';
 import { toggleCompleteToday } from '@/services/habit';
 import { calculateStreaks, isCompletedToday } from '@/services/streak';
 import { truncate } from '@/services/utils';
@@ -26,6 +27,19 @@ const Today = () => {
 
   const [quotes, setQuotes] = useState(defaultQuotes);
   const [quoteIndex, setQuoteIndex] = useState(0);
+
+  const [coverUri, setCoverUri] = useState<string | null>(null);
+
+  useEffect(() => {
+    const loadCover = async () => {
+      const savedUri = await getCoverImage();
+      if (savedUri) {
+        setCoverUri(savedUri);
+      }
+    };
+
+    loadCover();
+  }, []);
 
   const toggleHabit = async (habitId: string) => {
     const habit = habits.find(h => h.id === habitId);
@@ -90,7 +104,7 @@ const Today = () => {
         <ThemedView>
           {/* Background Image */}
           <Image
-            source={{ uri: 'https://images.unsplash.com/photo-1768822622847-dffee268a9dd?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&w=1080' }}
+            source={{ uri: coverUri ? coverUri : 'https://images.unsplash.com/photo-1768822622847-dffee268a9dd?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&w=1080' }}
             style={{ width: width, height: HEADER_HEIGHT, }}
             resizeMode='cover'
           />
