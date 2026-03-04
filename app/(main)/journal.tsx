@@ -69,6 +69,7 @@ const Journal = () => {
       setOpenDropdown(null);
     } else {
       setJournalEntries(entries);
+      setLoading(false);
     }
   }, [filter, entries]);
 
