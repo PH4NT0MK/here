@@ -2,12 +2,13 @@ import { Spinner } from '@/components/spinner';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { energyLevels } from '@/constants/energyLevels';
+import { debounce } from '@/services/debounce';
 import { EnergyFrequency, getEnergyFrequency } from '@/services/energyFrequency';
 import { getTagFrequency, TagFrequency } from '@/services/tagFrequency';
 import { formatJournalDate } from '@/services/utils';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { FlatList, Pressable, ScrollView, useColorScheme } from 'react-native';
 import { BarChart } from 'react-native-gifted-charts';
 import { useAuth } from '../context/authContext';
@@ -15,7 +16,7 @@ import { useJournal } from '../context/journalContext';
 
 const TimeCapsule = () => {
   const { user } = useAuth();
-  const { entries, fetchInitial } = useJournal();
+  const { entries, fetchInitial, fetchMore, lastVisible } = useJournal();
 
   const [loading, setLoading] = useState(true);
 
@@ -26,6 +27,16 @@ const TimeCapsule = () => {
     { id: 'm2', label: '1 Month Ago', date: 'Jan 4, 2026', text: "Started the new year with a fresh perspective. I want to focus on mindfulness this year.", mood: 'Determined' },
     { id: 'm3', label: '1 Year Ago', date: 'Feb 4, 2025', text: "It's my first day using this app! Excited to see where this journey takes me.", mood: 'Excited' }
   ];
+
+  const debouncedFetchMore = useRef<() => void>(() => { });
+
+  useEffect(() => {
+    if (!user?.uid) return;
+
+    debouncedFetchMore.current = debounce(() => {
+      fetchMore(user.uid);
+    }, 200);
+  }, [user?.uid, fetchMore]);
 
   useEffect(() => {
     if (!user?.uid) return;
@@ -117,7 +128,25 @@ const TimeCapsule = () => {
         </ScrollView>
       </ThemedView>
 
-      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 24 }}>
+      <ScrollView
+        onScroll={({ nativeEvent }) => {
+          if (!user?.uid || tab !== 'memories') {
+            return;
+          }
+
+          const { layoutMeasurement, contentOffset, contentSize } = nativeEvent;
+          const paddingToBottom = 20;
+
+          if (
+            layoutMeasurement.height + contentOffset.y >=
+            contentSize.height - paddingToBottom
+          ) {
+            debouncedFetchMore.current();
+          }
+        }}
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={{ paddingBottom: 24 }}
+      >
         {tab === 'memories' && <>
           {/* Milestones Carousel */}
           {milestones.length > 0 && (
@@ -223,7 +252,7 @@ const TimeCapsule = () => {
               ))}
             </ThemedView>
 
-            <ThemedText style={{ fontSize: 10, color: colorScheme === 'light' ? '#78716c' : '#a1a1aa', textAlign: 'center', paddingVertical: 12 }}>End of timeline</ThemedText>
+            {lastVisible === null && <ThemedText style={{ fontSize: 10, color: colorScheme === 'light' ? '#78716c' : '#a1a1aa', textAlign: 'center', paddingVertical: 12 }}>End of timeline</ThemedText>}
           </ThemedView>
         </>}
 
