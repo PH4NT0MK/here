@@ -1,4 +1,4 @@
-export const ENERGY_LEVELS = [
+export const energyLevels = [
   { value: 1, label: 'Exhausted', bgColor: 'rgba(248,113,113,0.8)', borderColor: 'rgba(239,68,68,0.8)', textColor: '#27272a' }, // red
   { value: 2, label: 'Tired', bgColor: 'rgba(251,146,60,0.8)', borderColor: 'rgba(249,115,22,0.8)', textColor: '#27272a' },     // orange
   { value: 3, label: 'Neutral', bgColor: 'rgba(250,204,21,0.8)', borderColor: 'rgba(234,179,8,0.8)', textColor: '#27272a' },  // yellow

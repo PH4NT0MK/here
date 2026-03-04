@@ -5,4 +5,5 @@ export type JournalEntry = {
   energy: number;
   createdAt: number;
   updatedAt: number;
+  favouritedAt?: number;
 };

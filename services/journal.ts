@@ -173,3 +173,21 @@ export const fetchJournalEntries = async (
 
   return { entries, lastVisible };
 };
+
+export const toggleFavourite = async (
+  userId: string,
+  entryId: string,
+  isCurrentlyFavourited: boolean
+) => {
+  const entryRef = doc(db, "users", userId, "journalEntries", entryId);
+
+  if (isCurrentlyFavourited) {
+    await updateDoc(entryRef, {
+      favouritedAt: null,
+    });
+  } else {
+    await updateDoc(entryRef, {
+      favouritedAt: Date.now(),
+    });
+  }
+};

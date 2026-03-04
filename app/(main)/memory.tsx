@@ -1,7 +1,7 @@
 import { Spinner } from '@/components/spinner';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
-import { ENERGY_LEVELS } from '@/constants/energyLevels';
+import { energyLevels } from '@/constants/energyLevels';
 import { EnergyFrequency, getEnergyFrequency } from '@/services/energyFrequency';
 import { getTagFrequency, TagFrequency } from '@/services/tagFrequency';
 import { formatJournalDate } from '@/services/utils';
@@ -186,11 +186,11 @@ const TimeCapsule = () => {
                         nestedScrollEnabled={true}
                       >
                         {entry?.tags &&
-                          [ENERGY_LEVELS[entry.energy - 1].label, ...entry.tags].map((tag, i) => (
+                          [energyLevels[entry.energy - 1].label, ...entry.tags].map((tag, i) => (
                             <ThemedView
                               key={tag}
                               style={{
-                                backgroundColor: i === 0 ? ENERGY_LEVELS[entry.energy - 1].bgColor : colorScheme === 'light' ? '#ecfdf5' : '#064e3b',
+                                backgroundColor: i === 0 ? energyLevels[entry.energy - 1].bgColor : colorScheme === 'light' ? '#ecfdf5' : '#064e3b',
                                 paddingHorizontal: 8,
                                 paddingVertical: 2,
                                 borderRadius: 6,
@@ -200,7 +200,7 @@ const TimeCapsule = () => {
                                 style={{
                                   fontSize: 12,
                                   fontWeight: '600',
-                                  color: i === 0 ? ENERGY_LEVELS[entry.energy - 1].textColor : '#10b981',
+                                  color: i === 0 ? energyLevels[entry.energy - 1].textColor : '#10b981',
                                 }}
                               >
                                 {tag}
@@ -266,7 +266,7 @@ const TimeCapsule = () => {
             </ThemedView>
 
             <ThemedView style={{ gap: 12, backgroundColor: 'transparent' }}>
-              {energyData.map((item) => (
+              {energyData.map((item, i) => (
                 <ThemedView
                   key={item.value}
                   style={{
@@ -292,6 +292,7 @@ const TimeCapsule = () => {
                       }}
                     >
                       <ThemedText style={{ fontSize: 12, fontWeight: '700', color: '#065f46', backgroundColor: 'transparent' }}>
+                        {/* {i + 1} */}
                         {item.value}
                       </ThemedText>
                     </ThemedView>

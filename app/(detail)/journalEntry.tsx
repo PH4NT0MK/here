@@ -1,6 +1,6 @@
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from "@/components/themed-view";
-import { ENERGY_LEVELS } from '@/constants/energyLevels';
+import { energyLevels } from '@/constants/energyLevels';
 import { defaultTags } from '@/constants/tags';
 import { addJournalEntry, updateJournalEntry } from '@/services/journal';
 import { formatJournalDate, truncate } from '@/services/utils';
@@ -181,7 +181,7 @@ const JournalEntryScreen = () => {
 
           {/* Scrollable Buttons */}
           <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ flexDirection: 'row', gap: 8, paddingBottom: 4, margin: 2, paddingRight: 8 }}>
-            {ENERGY_LEVELS.map(level => (
+            {energyLevels.map(level => (
               <Pressable
                 key={level.value}
                 onPress={() => setEnergy(level.value)}
@@ -226,11 +226,11 @@ const JournalEntryScreen = () => {
                   </ThemedText>
                 </Pressable>
               );
-            }) : entry?.tags && [ENERGY_LEVELS[entry.energy - 1].label, ...entry?.tags].map((tag, i) => <Pressable
+            }) : entry?.tags && [energyLevels[entry.energy - 1].label, ...entry?.tags].map((tag, i) => <Pressable
               key={tag}
-              style={{ paddingHorizontal: 12, paddingVertical: 6, borderRadius: 999, borderWidth: 1, backgroundColor: i === 0 ? ENERGY_LEVELS[entry.energy - 1].bgColor : isDark ? "#064e3b" : "#d1fae5", borderColor: i === 0 ? ENERGY_LEVELS[entry.energy - 1].borderColor : isDark ? "#047857" : "#a7f3d0" }}
+              style={{ paddingHorizontal: 12, paddingVertical: 6, borderRadius: 999, borderWidth: 1, backgroundColor: i === 0 ? energyLevels[entry.energy - 1].bgColor : isDark ? "#064e3b" : "#d1fae5", borderColor: i === 0 ? energyLevels[entry.energy - 1].borderColor : isDark ? "#047857" : "#a7f3d0" }}
             >
-              <ThemedText style={{ fontSize: 13, fontWeight: "500", color: i === 0 ? ENERGY_LEVELS[entry.energy - 1].textColor : isDark ? "#d1fae5" : "#065f46" }}>
+              <ThemedText style={{ fontSize: 13, fontWeight: "500", color: i === 0 ? energyLevels[entry.energy - 1].textColor : isDark ? "#d1fae5" : "#065f46" }}>
                 {truncate(tag, 20)}
               </ThemedText>
             </Pressable>)}
@@ -302,6 +302,7 @@ const JournalEntryScreen = () => {
           <ThemedText style={{ fontSize: 12, fontWeight: "500", color: isDark ? "#a8a29e" : "#78716c" }}>
             {entry ? formatJournalDate(entry.createdAt) : `Today at ${timeString}`}
           </ThemedText>
+          <Ionicons name='time-outline' size={12} color={isDark ? "#a8a29e" : "#78716c"} />
         </ThemedView>
       </ThemedView>
     </ThemedView>
