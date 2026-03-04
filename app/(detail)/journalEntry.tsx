@@ -9,7 +9,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
 import { useLocalSearchParams } from 'expo-router';
 import React, { useEffect, useRef, useState } from "react";
-import { Pressable, ScrollView, TextInput, useColorScheme } from "react-native";
+import { Alert, Pressable, ScrollView, TextInput, useColorScheme } from "react-native";
 import { useAuth } from '../../context/authContext';
 import { useJournal } from '../../context/journalContext';
 
@@ -71,10 +71,19 @@ const JournalEntryScreen = () => {
   };
 
   const handleSave = async () => {
-    if (!user?.uid) return;
+    if (!user?.uid) {
+      return;
+    }
+
+    if (content.trim().length < 1) {
+      Alert.alert(
+        "Journal entry cannot be empty."
+      );
+      return;
+    }
 
     const newEntryData = {
-      content,
+      content: content.trim(),
       tags: selectedTags.map(tag => tag.text),
       energy,
     };
@@ -273,6 +282,7 @@ const JournalEntryScreen = () => {
         {isEditing || isCreating ? <Pressable onPress={() => inputRef.current?.focus()} style={{ flex: 1 }}>
           <ThemedView style={{ minHeight: 300, backgroundColor: 'transparent', flex: 1 }}>
             <TextInput
+              maxLength={MAX_CHARS}
               ref={inputRef}
               value={content}
               onChangeText={handleChangeContent}

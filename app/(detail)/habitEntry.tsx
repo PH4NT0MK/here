@@ -8,7 +8,7 @@ import { Habit, HabitFrequency } from "@/types/habit";
 import { Ionicons } from "@expo/vector-icons";
 import { useLocalSearchParams, useNavigation } from "expo-router";
 import React, { useEffect, useState } from "react";
-import { Pressable, ScrollView, TextInput, useColorScheme, } from "react-native";
+import { Alert, Pressable, ScrollView, TextInput, useColorScheme, } from "react-native";
 import { BarChart } from "react-native-gifted-charts";
 import { useAuth } from "../../context/authContext";
 import { useHabits } from "../../context/habitContext";
@@ -86,7 +86,16 @@ const HabitScreen = () => {
   }, [id, habits]);
 
   const handleSave = async () => {
-    if (!user?.uid) return;
+    if (!user?.uid) {
+      return;
+    }
+
+    if (title.trim().length < 1) {
+      Alert.alert(
+        "Habit title cannot be empty."
+      );
+      return;
+    }
 
     const payload = {
       title: title.trim(),
