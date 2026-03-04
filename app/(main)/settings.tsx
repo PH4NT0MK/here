@@ -1,11 +1,13 @@
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
+import { saveCoverImage } from '@/services/customPhoto';
 import { auth } from '@/services/firebaseConfig';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { signOut } from 'firebase/auth';
 import React, { useState } from 'react';
 import { Pressable, ScrollView, Switch, useColorScheme } from 'react-native';
+import { launchImageLibrary } from 'react-native-image-picker';
 
 const Settings = () => {
   const colorScheme = useColorScheme();
@@ -22,6 +24,16 @@ const Settings = () => {
     }
   };
 
+  const pickImage = async () => {
+    const result = await launchImageLibrary({ mediaType: 'photo', selectionLimit: 1 });
+    if (result.assets && result.assets.length > 0) {
+      const uri = result.assets[0].uri;
+      return uri;
+    }
+
+    return null;
+  };
+
   return (
     <ThemedView style={{ flex: 1, backgroundColor: colorScheme === 'light' ? '#fafaf9' : '#1f1f1f' }}>
       {/* Header */}
@@ -36,8 +48,8 @@ const Settings = () => {
 
           <ThemedView style={{ backgroundColor: colorScheme === 'light' ? '#ffffff' : '#262626', borderRadius: 16, borderWidth: 1, borderColor: colorScheme === 'light' ? '#e7e5e4' : '#3f3f46', overflow: 'hidden' }}>
             {/* Notifications */}
-            <ThemedView style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: 16, borderBottomWidth: 1, borderBottomColor: colorScheme === 'light' ? '#f5f5f4' : '#3f3f46' }}>
-              <ThemedView style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+            <ThemedView style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: 16, borderBottomWidth: 1, borderBottomColor: colorScheme === 'light' ? '#f5f5f4' : '#3f3f46', backgroundColor: 'transparent' }}>
+              <ThemedView style={{ flexDirection: 'row', alignItems: 'center', gap: 12, backgroundColor: 'transparent' }}>
                 <ThemedView style={{ width: 32, height: 32, borderRadius: 16, backgroundColor: '#d1fae5', alignItems: 'center', justifyContent: 'center' }}>
                   <Ionicons name="notifications-outline" size={16} color="#10b981" />
                 </ThemedView>
@@ -47,8 +59,8 @@ const Settings = () => {
             </ThemedView>
 
             {/* Daily Check-in */}
-            <ThemedView style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: 16, borderBottomWidth: 1, borderBottomColor: colorScheme === 'light' ? '#f5f5f4' : '#3f3f46' }}>
-              <ThemedView style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+            <ThemedView style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: 16, borderBottomWidth: 1, borderBottomColor: colorScheme === 'light' ? '#f5f5f4' : '#3f3f46', backgroundColor: 'transparent' }}>
+              <ThemedView style={{ flexDirection: 'row', alignItems: 'center', gap: 12, backgroundColor: 'transparent' }}>
                 <ThemedView style={{ width: 32, height: 32, borderRadius: 16, backgroundColor: '#d1fae5', alignItems: 'center', justifyContent: 'center' }}>
                   <Ionicons name="time-outline" size={16} color="#10b981" />
                 </ThemedView>
@@ -57,9 +69,30 @@ const Settings = () => {
               <Switch value={checkInReminders} onValueChange={setCheckInReminders} trackColor={{ true: '#10b981', false: colorScheme === 'light' ? '#e5e7eb' : '#3f3f46' }} thumbColor={colorScheme === 'light' ? '#ffffff' : '#fafafa'} />
             </ThemedView>
 
+            {/* Custom image input */}
+            <Pressable
+              onPress={async () => {
+                const uri = await pickImage();
+                if (uri) {
+                  await saveCoverImage(uri);
+                }
+              }}
+              style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: 16, borderBottomWidth: 1, borderBottomColor: colorScheme === 'light' ? '#f5f5f4' : '#3f3f46' }}
+            >
+              <ThemedView style={{ flexDirection: 'row', alignItems: 'center', gap: 12, backgroundColor: 'transparent' }}>
+                <ThemedView style={{ width: 32, height: 32, borderRadius: 16, backgroundColor: '#d1fae5', alignItems: 'center', justifyContent: 'center' }}>
+                  <Ionicons name="image-outline" size={16} color="#10b981" />
+                </ThemedView>
+                <ThemedText style={{ fontSize: 14, fontWeight: '500', color: colorScheme === 'light' ? '#292524' : '#fafafa' }}>
+                  Upload Custom Image
+                </ThemedText>
+              </ThemedView>
+              <Ionicons name="chevron-forward" size={20} color={colorScheme === 'light' ? '#292524' : '#fafafa'} />
+            </Pressable>
+
             {/* Pixel Art Theme */}
-            <ThemedView style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: 16 }}>
-              <ThemedView style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+            <ThemedView style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: 16, backgroundColor: 'transparent' }}>
+              <ThemedView style={{ flexDirection: 'row', alignItems: 'center', gap: 12, backgroundColor: 'transparent' }}>
                 <ThemedView style={{ width: 32, height: 32, borderRadius: 16, backgroundColor: '#ede9fe', alignItems: 'center', justifyContent: 'center' }}>
                   <Ionicons name="sunny-outline" size={16} color="#7c3aed" />
                 </ThemedView>
