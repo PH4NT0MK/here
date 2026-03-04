@@ -191,3 +191,16 @@ export const toggleFavourite = async (
     });
   }
 };
+
+// export const fetchLatestFavourites = async (userId: string): Promise<JournalEntry[]> => {
+//   const entriesRef = collection(db, "users", userId, "journalEntries");
+//   const q = query(
+//     entriesRef,
+//     where("favouritedAt", "!=", null),
+//     orderBy("favouritedAt", "desc"),
+//     limit(3)
+//   );
+
+//   const snapshot = await getDocs(q);
+//   return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as JournalEntry));
+// };

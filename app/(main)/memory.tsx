@@ -4,29 +4,43 @@ import { ThemedView } from '@/components/themed-view';
 import { energyLevels } from '@/constants/energyLevels';
 import { debounce } from '@/services/debounce';
 import { EnergyFrequency, getEnergyFrequency } from '@/services/energyFrequency';
+import { toggleFavourite } from '@/services/journal';
 import { getTagFrequency, TagFrequency } from '@/services/tagFrequency';
-import { formatJournalDate } from '@/services/utils';
+import { formatJournalDate, truncate } from '@/services/utils';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import React, { useEffect, useRef, useState } from 'react';
-import { FlatList, Pressable, ScrollView, useColorScheme } from 'react-native';
+import { Alert, Pressable, ScrollView, useColorScheme } from 'react-native';
 import { BarChart } from 'react-native-gifted-charts';
 import { useAuth } from '../context/authContext';
 import { useJournal } from '../context/journalContext';
 
 const TimeCapsule = () => {
   const { user } = useAuth();
-  const { entries, fetchInitial, fetchMore, lastVisible } = useJournal();
+  const { entries, setEntries, fetchInitial, fetchMore, lastVisible } = useJournal();
 
   const [loading, setLoading] = useState(true);
 
   const colorScheme = useColorScheme();
 
-  const milestones = [
-    { id: 'm1', label: '1 Week Ago', date: 'Jan 28, 2026', text: "Feeling a bit tired today. Need to catch up on sleep and reset for the week ahead.", mood: 'Tired' },
-    { id: 'm2', label: '1 Month Ago', date: 'Jan 4, 2026', text: "Started the new year with a fresh perspective. I want to focus on mindfulness this year.", mood: 'Determined' },
-    { id: 'm3', label: '1 Year Ago', date: 'Feb 4, 2025', text: "It's my first day using this app! Excited to see where this journey takes me.", mood: 'Excited' }
-  ];
+  // const [milestones, setMilestones] = useState<JournalEntry[]>([]);
+  // const [loadingMilestones, setLoadingMilestones] = useState(false);
+
+  // useEffect(() => {
+  //   const getMilestones = async () => {
+  //     if (!user?.uid) return;
+  //     setLoadingMilestones(true);
+  //     try {
+  //       const latest = await fetchLatestFavourites(user.uid);
+  //       setMilestones(latest);
+  //     } catch (err) {
+  //       console.error("Failed to fetch milestones", err);
+  //     }
+  //     setLoadingMilestones(false);
+  //   };
+
+  //   getMilestones();
+  // }, [user?.uid]);
 
   const debouncedFetchMore = useRef<() => void>(() => { });
 
@@ -37,6 +51,46 @@ const TimeCapsule = () => {
       fetchMore(user.uid);
     }, 200);
   }, [user?.uid, fetchMore]);
+
+  const handleToggleFavourite = async (entryId: string) => {
+    if (!user?.uid) return;
+
+    const entry = entries.find(e => e.id === entryId);
+    if (!entry) return;
+
+    const isCurrentlyFavourited = !!entry.favouritedAt;
+
+    setEntries(prev =>
+      prev.map(e =>
+        e.id === entryId
+          ? {
+            ...e,
+            favouritedAt: isCurrentlyFavourited ? undefined : Date.now(),
+          }
+          : e
+      )
+    );
+
+    try {
+      await toggleFavourite(user.uid, entryId, isCurrentlyFavourited);
+    } catch {
+      setEntries(prev =>
+        prev.map(e =>
+          e.id === entryId
+            ? {
+              ...e,
+              favouritedAt: entry.favouritedAt,
+            }
+            : e
+        )
+      );
+
+      Alert.alert(
+        "Something went wrong",
+        "We couldn't update your favourite. Please try again."
+      );
+    }
+  };
 
   useEffect(() => {
     if (!user?.uid) return;
@@ -149,7 +203,7 @@ const TimeCapsule = () => {
       >
         {tab === 'memories' && <>
           {/* Milestones Carousel */}
-          {milestones.length > 0 && (
+          {/* {loadingMilestones ? <Spinner /> : milestones.length > 0 && (
             <FlatList
               data={milestones}
               keyExtractor={(item) => item.id}
@@ -157,26 +211,78 @@ const TimeCapsule = () => {
               showsHorizontalScrollIndicator={false}
               contentContainerStyle={{ paddingLeft: 24, paddingVertical: 16, gap: 16 }}
               renderItem={({ item }) => (
-                <Pressable onPress={() => router.push({
-                  pathname: "/(detail)/journalEntry",
-                  params: { id: item.id }
-                })} style={{ width: 280, backgroundColor: '#10b981', borderRadius: 24, padding: 16, justifyContent: 'space-between', height: 192 }}>
-                  <ThemedView style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 8, backgroundColor: 'transparent' }}>
-                    <ThemedText style={{ fontSize: 12, fontWeight: '700', color: '#ffffff', backgroundColor: 'rgba(255,255,255,0.2)', paddingHorizontal: 6, paddingVertical: 2, borderRadius: 8 }}>{item.label}</ThemedText>
-                    <ThemedText style={{ fontSize: 12, color: 'rgba(255,255,255,0.8)' }}>{item.date}</ThemedText>
+                <Pressable
+                  onPress={() =>
+                    router.push({
+                      pathname: "/(detail)/journalEntry",
+                      params: { id: item.id },
+                    })
+                  }
+                  style={{
+                    width: 280,
+                    backgroundColor: colorScheme === "light" ? "#10b981" : "#064e3b",
+                    borderRadius: 24,
+                    padding: 16,
+                    justifyContent: "space-between",
+                    height: 192,
+                  }}
+                >
+                  <ThemedView
+                    style={{ flexDirection: "row", justifyContent: "space-between", marginBottom: 8, backgroundColor: "transparent" }}
+                  >
+                    <ThemedText
+                      style={{
+                        fontSize: 12,
+                        fontWeight: "700",
+                        color: "#ffffff",
+                        backgroundColor: "rgba(255,255,255,0.2)",
+                        paddingHorizontal: 6,
+                        paddingVertical: 2,
+                        borderRadius: 8,
+                      }}
+                    >
+                      {energyLevels[item.energy - 1].label}
+                    </ThemedText>
+                    <ThemedText style={{ fontSize: 12, color: "rgba(255,255,255,0.8)" }}>
+                      {formatJournalDate(item.createdAt, true)}
+                    </ThemedText>
                   </ThemedView>
-                  <ThemedText style={{ fontSize: 14, color: 'rgba(255,255,255,0.9)', fontStyle: 'italic', flexShrink: 1 }}>{`"`}{item.text}{`"`}</ThemedText>
-                  <ThemedView style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 8, backgroundColor: 'transparent' }}>
-                    <ThemedText style={{ fontSize: 12, backgroundColor: 'rgba(0,0,0,0.2)', paddingHorizontal: 6, paddingVertical: 2, borderRadius: 999, color: colorScheme === 'light' ? '#fafafa' : '#292524' }}>{item.mood}</ThemedText>
-                    <ThemedView style={{ flexDirection: 'row', alignItems: 'center', gap: 4, backgroundColor: 'transparent' }}>
-                      <ThemedText style={{ fontSize: 12, fontWeight: '600', color: '#ffffff' }}>Read Entry</ThemedText>
+
+                  <ThemedText
+                    style={{
+                      fontSize: 14,
+                      color: "#ffffff",
+                      fontStyle: "italic",
+                      flexShrink: 1,
+                    }}
+                  >
+                    {truncate(item.content, 128)}
+                  </ThemedText>
+
+                  <ThemedView
+                    style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginTop: 8, backgroundColor: "transparent" }}
+                  >
+                    <ThemedText
+                      style={{
+                        fontSize: 12,
+                        backgroundColor: "rgba(0,0,0,0.2)",
+                        paddingHorizontal: 6,
+                        paddingVertical: 2,
+                        borderRadius: 999,
+                        color: "#ffffff",
+                      }}
+                    >
+                      {levels[item.energy]}
+                    </ThemedText>
+                    <ThemedView style={{ flexDirection: "row", alignItems: "center", gap: 4, backgroundColor: "transparent" }}>
+                      <ThemedText style={{ fontSize: 12, fontWeight: "600", color: "#ffffff" }}>Read Entry</ThemedText>
                       <Ionicons name="arrow-forward" size={14} color="#ffffff" />
                     </ThemedView>
                   </ThemedView>
                 </Pressable>
               )}
             />
-          )}
+          )} */}
 
           {/* Timeline Section */}
           <ThemedView style={{ paddingHorizontal: 24, marginTop: 16, backgroundColor: 'transparent' }}>
@@ -424,6 +530,37 @@ const TimeCapsule = () => {
                 ))}
               </ThemedView>
             </ThemedView>
+          </ScrollView>
+        )}
+
+        {tab === 'favourites' && (
+          <ScrollView contentContainerStyle={{ padding: 24, gap: 16 }}>
+            {entries.filter(e => e.favouritedAt).map(entry => (
+              <ThemedView key={entry.id} style={{ backgroundColor: colorScheme === 'light' ? '#fff7f8' : '#3f1f23', borderRadius: 16, padding: 20, paddingTop: 12, borderWidth: 1, borderColor: colorScheme === 'light' ? '#fbcfe8' : '#5a1f2b' }}>
+                <ThemedView style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8, backgroundColor: 'transparent' }}>
+                  <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ flexDirection: 'row', gap: 6, backgroundColor: 'transparent', paddingVertical: 4 }}>
+                    {[energyLevels[entry.energy - 1].label, ...(entry.tags || [])].map((tag, i) => (
+                      <ThemedView key={tag} style={{ backgroundColor: i === 0 ? energyLevels[entry.energy - 1].bgColor : colorScheme === 'light' ? '#f0fdf4' : '#064e3b', paddingHorizontal: 8, paddingVertical: 2, borderRadius: 6 }}>
+                        <ThemedText style={{ fontSize: 12, fontWeight: '600', color: i === 0 ? energyLevels[entry.energy - 1].textColor : '#10b981' }}>{tag}</ThemedText>
+                      </ThemedView>
+                    ))}
+                  </ScrollView>
+                  <ThemedView style={{ flexDirection: 'row', alignItems: 'center', gap: 4, backgroundColor: 'transparent', marginLeft: 6 }}>
+                    <Ionicons name="calendar-outline" size={12} color={colorScheme === 'light' ? '#78716c' : '#a1a1aa'} />
+                    <ThemedText style={{ fontSize: 12, color: colorScheme === 'light' ? '#78716c' : '#a1a1aa' }}>{formatJournalDate(entry.createdAt, true)}</ThemedText>
+                  </ThemedView>
+                </ThemedView>
+                <Pressable onPress={() => router.push({ pathname: '/(detail)/journalEntry', params: { id: entry.id } })}>
+                  <ThemedText numberOfLines={1} style={{ fontSize: 15, fontWeight: '600', marginBottom: 4, color: colorScheme === 'light' ? '#27272a' : '#fafafa' }}>{truncate(entry.content, 24)}</ThemedText>
+                  <ThemedView style={{ flexDirection: 'row', backgroundColor: 'transparent' }}>
+                    <ThemedText numberOfLines={4} style={{ flex: 1, fontSize: 14, lineHeight: 20, marginRight: 8, color: colorScheme === 'light' ? '#52525b' : '#d4d4d8' }}>{truncate(entry.content, 256)}</ThemedText>
+                    <Pressable onPress={() => handleToggleFavourite(entry.id)}>
+                      <Ionicons name={entry.favouritedAt ? 'heart' : 'heart-outline'} size={18} color={entry.favouritedAt ? '#ef4444' : colorScheme === 'light' ? '#a1a1aa' : '#71717a'} style={{ marginTop: 'auto' }} />
+                    </Pressable>
+                  </ThemedView>
+                </Pressable>
+              </ThemedView>
+            ))}
           </ScrollView>
         )}
 
