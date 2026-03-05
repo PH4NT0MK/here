@@ -40,7 +40,7 @@ const Journal = () => {
   };
 
   useEffect(() => {
-    if (!user?.uid || entries.length > 0) {
+    if (!user?.uid) {
       return;
     }
 
@@ -51,7 +51,12 @@ const Journal = () => {
     };
 
     init();
-  }, [user?.uid, fetchInitial, entries]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user?.uid]);
+
+  useEffect(() => {
+    setJournalEntries(entries);
+  }, [entries]);
 
   const debouncedFetchMore = useRef<() => void>(() => { });
 
@@ -270,16 +275,19 @@ const Journal = () => {
             </Pressable>
           </ThemedView>
         ))}
-        {lastVisible === null && entries?.length !== 0 ? <ThemedText style={{ textAlign: 'center', fontSize: 12, color: colorScheme === 'light' ? 'rgba(0,0,0,0.4)' : 'rgba(255,255,255,0.4)', marginVertical: 8 }}>
+
+        {lastVisible === null && entries?.length !== 0 && <ThemedText style={{ textAlign: 'center', fontSize: 12, color: colorScheme === 'light' ? 'rgba(0,0,0,0.4)' : 'rgba(255,255,255,0.4)', marginVertical: 8 }}>
           End of Entries
-        </ThemedText> : <ActionCard
+        </ThemedText>}
+
+        <ActionCard
           topLabel="Reflection"
           topIcon="chatbubble-outline"
           mainText={getRandomJournalPrompt()}
           buttonText="Write Entry"
           colorScheme={colorScheme as 'light' | 'dark'}
           onPress={() => router.push('/(detail)/journalEntry')}
-        />}
+        />
       </ScrollView>
 
       {/* Floating Action Button */}
