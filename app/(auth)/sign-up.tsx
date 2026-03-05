@@ -5,13 +5,15 @@ import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { createUserWithEmailAndPassword } from 'firebase/auth';
 import { useState } from 'react';
-import { KeyboardAvoidingView, Platform, TextInput, TouchableOpacity, View } from 'react-native';
+import { KeyboardAvoidingView, Platform, Pressable, TextInput, TouchableOpacity, View } from 'react-native';
 
 export default function SignUp() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const [showPassword, setShowPassword] = useState(false);
 
   const handleSignUp = async () => {
     if (!email || !password) {
@@ -55,14 +57,14 @@ export default function SignUp() {
         <View style={{ gap: 4 }}>
           <ThemedText style={{ fontSize: 14, fontWeight: '500', color: '#44403c' }}>Email</ThemedText>
           <View style={{ flexDirection: 'row', alignItems: 'center', borderRadius: 12, borderWidth: 1, borderColor: '#e7e5e4', backgroundColor: '#ffffff', paddingHorizontal: 12 }}>
-            <Ionicons name="mail-outline" size={20} color="#a8a29e" style={{ marginRight: 8 }} />
+            <Ionicons name='mail-outline' size={20} color='#a8a29e' style={{ marginRight: 8 }} />
             <TextInput
               value={email}
               onChangeText={setEmail}
-              placeholder="hello@example.com"
-              keyboardType="email-address"
-              autoCapitalize="none"
-              placeholderTextColor="#a8a29e"
+              placeholder='hello@example.com'
+              keyboardType='email-address'
+              autoCapitalize='none'
+              placeholderTextColor='#a8a29e'
               style={{ flex: 1, paddingVertical: 12, color: '#292524' }}
             />
           </View>
@@ -72,15 +74,18 @@ export default function SignUp() {
         <View style={{ gap: 4 }}>
           <ThemedText style={{ fontSize: 14, fontWeight: '500', color: '#44403c' }}>Password</ThemedText>
           <View style={{ flexDirection: 'row', alignItems: 'center', borderRadius: 12, borderWidth: 1, borderColor: '#e7e5e4', backgroundColor: '#ffffff', paddingHorizontal: 12 }}>
-            <Ionicons name="lock-closed-outline" size={20} color="#a8a29e" style={{ marginRight: 8 }} />
+            <Ionicons name='lock-closed-outline' size={20} color='#a8a29e' style={{ marginRight: 8 }} />
             <TextInput
               value={password}
               onChangeText={setPassword}
-              placeholder="••••••••"
-              secureTextEntry
-              placeholderTextColor="#a8a29e"
+              placeholder='••••••••'
+              secureTextEntry={!showPassword}
+              placeholderTextColor='#a8a29e'
               style={{ flex: 1, paddingVertical: 12, color: '#292524' }}
             />
+            <Pressable onPress={() => setShowPassword(prev => !prev)}>
+              <Ionicons name={showPassword ? 'eye-off-outline' : 'eye-outline'} size={20} color='#a8a29e' style={{ marginRight: 8 }} />
+            </Pressable>
           </View>
         </View>
 
@@ -97,7 +102,7 @@ export default function SignUp() {
           <ThemedText style={{ color: '#ffffff', fontWeight: '600' }}>
             {loading ? 'Creating account...' : 'Sign Up'}
           </ThemedText>
-          <Ionicons name="arrow-forward-outline" size={20} color="white" />
+          <Ionicons name='arrow-forward-outline' size={20} color='white' />
         </TouchableOpacity>
       </View>
 

@@ -3,13 +3,15 @@ import { login } from '@/services/firebaseAuth';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { useState } from 'react';
-import { KeyboardAvoidingView, Platform, TextInput, TouchableOpacity, View } from 'react-native';
+import { KeyboardAvoidingView, Platform, Pressable, TextInput, TouchableOpacity, View } from 'react-native';
 
 export default function SignIn() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const [showPassword, setShowPassword] = useState(false);
 
   const handleLogin = async () => {
     if (!email || !password) {
@@ -77,10 +79,13 @@ export default function SignIn() {
             <TextInput
               onChangeText={setPassword}
               placeholder="••••••••"
-              secureTextEntry
+              secureTextEntry={!showPassword}
               placeholderTextColor="#a8a29e"
               style={{ flex: 1, paddingVertical: 12, color: '#292524' }}
             />
+            <Pressable onPress={() => setShowPassword(prev => !prev)}>
+              <Ionicons name={showPassword ? 'eye-off-outline' : 'eye-outline'} size={20} color='#a8a29e' style={{ marginRight: 8 }} />
+            </Pressable>
           </View>
         </View>
 
