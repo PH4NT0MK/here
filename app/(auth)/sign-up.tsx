@@ -1,4 +1,5 @@
 import { ThemedText } from '@/components/themed-text';
+import { firebaseErrorMessages } from '@/constants/errors';
 import { auth } from '@/services/firebaseConfig';
 import { createUserDocument } from '@/services/user';
 import { Ionicons } from '@expo/vector-icons';
@@ -29,7 +30,9 @@ export default function SignUp() {
 
       router.replace('/(main)/today');
     } catch (err: any) {
-      setError(err.message);
+      setError(err.code && firebaseErrorMessages[err.code]
+        ? firebaseErrorMessages[err.code]
+        : "An unexpected error occurred. Please try again.");
     } finally {
       setLoading(false);
     }

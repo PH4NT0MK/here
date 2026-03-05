@@ -40,7 +40,7 @@ const Journal = () => {
   };
 
   useEffect(() => {
-    if (!user?.uid) {
+    if (!user?.uid || entries.length > 0) {
       return;
     }
 
@@ -51,7 +51,7 @@ const Journal = () => {
     };
 
     init();
-  }, [user?.uid, fetchInitial]);
+  }, [user?.uid, fetchInitial, entries]);
 
   const debouncedFetchMore = useRef<() => void>(() => { });
 

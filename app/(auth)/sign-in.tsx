@@ -1,4 +1,5 @@
 import { ThemedText } from '@/components/themed-text';
+import { firebaseErrorMessages } from '@/constants/errors';
 import { login } from '@/services/firebaseAuth';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
@@ -24,7 +25,9 @@ export default function SignIn() {
       await login(email, password);
       router.replace('/(main)/today');
     } catch (err: any) {
-      setError(err.message);
+      setError(err.code && firebaseErrorMessages[err.code]
+        ? firebaseErrorMessages[err.code]
+        : "An unexpected error occurred. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -113,4 +116,4 @@ export default function SignIn() {
       </ThemedText>
     </KeyboardAvoidingView>
   );
-}
+};
