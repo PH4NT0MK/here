@@ -3,7 +3,7 @@ import { Spinner } from '@/components/spinner';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { getRandomHabitMessage } from '@/constants/habits';
-import { toggleCompleteToday } from '@/services/habit';
+import { toggleCompleteHabit } from '@/services/habit';
 import { calculateStreaks, isCompletedToday } from '@/services/streak';
 import { truncate } from '@/services/utils';
 import { Ionicons } from '@expo/vector-icons';
@@ -78,7 +78,7 @@ const Habits = () => {
                       return;
                     }
 
-                    const updatedCompletedAt = await toggleCompleteToday(user.uid, habit.id);
+                    const updatedCompletedAt = await toggleCompleteHabit(user.uid, habit.id);
 
                     if (!updatedCompletedAt) {
                       return;

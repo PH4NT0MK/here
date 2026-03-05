@@ -38,8 +38,6 @@ export const calculateStreaks = (
         const prevYear = prevDate.getFullYear();
         const currYear = currDate.getFullYear();
 
-        // consecutive if currDate is in the same month as prevDate => still part of streak
-        // or currDate is in the next month => increment streak
         const isSameMonth = currYear === prevYear && currMonth === prevMonth;
         const isNextMonth =
           (currYear === prevYear && currMonth === prevMonth + 1) ||
@@ -47,10 +45,8 @@ export const calculateStreaks = (
 
         return isSameMonth || isNextMonth;
       case "custom":
-        // For custom, we check if the day matches a scheduled day
         const prevDay = new Date(prev).getDay();
         const currDay = new Date(curr).getDay();
-        // consecutive if currDay follows a scheduled day after prevDay
         const sortedDays = [...frequency.days].sort((a, b) => a - b);
         const prevIndex = sortedDays.indexOf(prevDay);
         const nextIndex = (prevIndex + 1) % sortedDays.length;
@@ -122,24 +118,38 @@ export const isCompletedToday = (
         return d.getFullYear() === today.getFullYear() && d.getMonth() === today.getMonth();
       });
 
-    case "custom":
+    case "custom": {
       const todayDay = today.getDay();
-      const completed = completedAt.some(ms => {
-        const d = new Date(ms);
-        d.setHours(0, 0, 0, 0);
-        return d.getTime() === todayMs;
-      });
-      if (completed) return true;
 
-      // Sort the custom days [Mon=1, Wed=3, Fri=5] etc.
+      // Sort scheduled days ascending
       const sortedDays = [...frequency.days].sort((a, b) => a - b);
 
-      // Find the next scheduled day after today (or wrap around)
-      const nextIndex = sortedDays.findIndex(day => day >= todayDay);
-      const nextScheduledDay = nextIndex >= 0 ? sortedDays[nextIndex] : sortedDays[0];
+      // Step 1: Build the windows for each scheduled day
+      const windows: number[][] = sortedDays.map((d, i) => {
+        const prev = i === 0 ? sortedDays[sortedDays.length - 1] : sortedDays[i - 1];
+        const window: number[] = [];
+        let day = (prev + 1) % 7;
+        while (true) {
+          window.push(day);
+          if (day === sortedDays[i]) break;
+          day = (day + 1) % 7;
+        }
+        return window;
+      });
 
-      // If today is before or equal to the next scheduled day, consider it completed “naturally”
-      return todayDay <= nextScheduledDay;
+      // Step 2: Find the window today belongs to
+      const currentWindow = windows.find((w) => w.includes(todayDay));
+      if (!currentWindow) return false;
+
+      // Step 3: Check if any completedAt timestamp is inside the current window
+      const todayCompleted = completedAt.some((ms) => {
+        const d = new Date(ms);
+        const dayNum = d.getDay();
+        return currentWindow.includes(dayNum);
+      });
+
+      return todayCompleted;
+    }
 
     default:
       return false;

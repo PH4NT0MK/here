@@ -100,28 +100,89 @@ export const fetchHabitsWithStreaks = async (userId: string) => {
 //   });
 // };
 
-export const toggleCompleteToday = async (userId: string, habitId: string) => {
+export const toggleCompleteHabit = async (userId: string, habitId: string) => {
   const docRef = doc(db, "users", userId, "habits", habitId);
   const snapshot = await getDoc(docRef);
   if (!snapshot.exists()) return;
 
   const habit = snapshot.data();
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  const todayMs = today.getTime();
-
   const completedAt: number[] = habit.completedAt || [];
-  const index = completedAt.findIndex(ms => {
-    const d = new Date(ms);
-    d.setHours(0, 0, 0, 0);
-    return d.getTime() === todayMs;
-  });
+  const now = new Date();
+
+  const frequencyType = habit.frequency?.type;
+  const targetDay = habit.frequency?.day; // for monthly habits
+  const frequency: number[] = habit.frequency?.days || []; // for custom habits
+
+  const isCompleted = (ms: number) => {
+    const date = new Date(ms);
+
+    switch (frequencyType) {
+      case "daily":
+        return date.toDateString() === now.toDateString();
+
+      case "weekly": {
+        const windowStart = new Date(now);
+        windowStart.setDate(windowStart.getDate() - 7);
+        return date >= windowStart && date <= now;
+      }
+
+      case "monthly": {
+        if (!targetDay) return false;
+        const targetDateThisMonth = new Date(now.getFullYear(), now.getMonth(), targetDay);
+        const windowStart = new Date(targetDateThisMonth);
+        windowStart.setDate(windowStart.getDate() - 30);
+        return date >= windowStart && date <= targetDateThisMonth;
+      }
+
+      case "custom": {
+        const daysOfWeek: number[] = frequency || [];
+        if (!daysOfWeek.length) return false;
+
+        const sortedDays = [...daysOfWeek].sort((a, b) => a - b);
+
+        // Step 1 & 2: Create single-element arrays
+        let windows: number[][] = sortedDays.map((d) => [d]);
+
+        // Step 3: Expand each array backward to the day after previous window
+        for (let i = 0; i < windows.length; i++) {
+          const prevEnd = i === 0 ? (sortedDays[sortedDays.length - 1] + 7) % 7 : sortedDays[i - 1];
+          let start = (prevEnd + 1) % 7;
+          const window = [];
+
+          let day = start;
+          while (true) {
+            window.push(day);
+            if (day === sortedDays[i]) break;
+            day = (day + 1) % 7;
+          }
+
+          windows[i] = window;
+        }
+
+        // Step 4: Determine today
+        const todayDay = now.getDay();
+
+        // Step 5: Find window today belongs to
+        const currentWindow = windows.find((w) => w.includes(todayDay));
+        if (!currentWindow) return false;
+
+        // Step 6: Check if a completion exists for any day in this window
+        return completedAt.some((ms) => {
+          const d = new Date(ms);
+          return currentWindow.includes(d.getDay());
+        });
+      }
+
+      default:
+        return false;
+    }
+  };
+
+  const index = completedAt.findIndex(isCompleted);
 
   if (index >= 0) {
-    // Already completed today -> remove it
     completedAt.splice(index, 1);
   } else {
-    // Not completed today -> add it
     completedAt.push(Date.now());
   }
 

@@ -7,7 +7,7 @@ import { getRandomHabitMessage } from '@/constants/habits';
 import { getRandomJournalPrompt } from '@/constants/journals';
 import { defaultQuotes } from '@/constants/quotes';
 import { getCoverImage } from '@/services/customPhoto';
-import { toggleCompleteToday } from '@/services/habit';
+import { toggleCompleteHabit } from '@/services/habit';
 import { calculateStreaks, isCompletedToday } from '@/services/streak';
 import { truncate } from '@/services/utils';
 import { Ionicons } from '@expo/vector-icons';
@@ -50,7 +50,7 @@ const Today = () => {
       return;
     }
 
-    const updatedCompletedAt = await toggleCompleteToday(user.uid, habitId);
+    const updatedCompletedAt = await toggleCompleteHabit(user.uid, habitId);
     if (!updatedCompletedAt) return;
 
     const { currentStreak, longestStreak } = calculateStreaks(updatedCompletedAt, habit.frequency);

@@ -2,7 +2,7 @@ import StatCard from "@/components/StatCard";
 import { ThemedText } from "@/components/themed-text";
 import { ThemedView } from "@/components/themed-view";
 import { habitPlaceholders } from "@/constants/habitPlaceholders";
-import { addHabit, toggleCompleteToday, updateHabit } from "@/services/habit";
+import { addHabit, toggleCompleteHabit, updateHabit } from "@/services/habit";
 import { calculateStreaks } from "@/services/streak";
 import { Habit, HabitFrequency } from "@/types/habit";
 import { Ionicons } from "@expo/vector-icons";
@@ -421,6 +421,7 @@ const HabitScreen = () => {
                 yAxisThickness={0}
                 xAxisThickness={0}
                 hideYAxisText
+                xAxisLabelTextStyle={{ color: colorScheme === 'light' ? '#78716c' : '#a1a1aa' }}
               />
             </ThemedView>
 
@@ -437,7 +438,7 @@ const HabitScreen = () => {
                   return;
                 }
 
-                const updatedCompletedAt = await toggleCompleteToday(user.uid, habit.id);
+                const updatedCompletedAt = await toggleCompleteHabit(user.uid, habit.id);
 
                 if (!updatedCompletedAt) {
                   return;
