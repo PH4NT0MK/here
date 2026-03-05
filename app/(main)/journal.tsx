@@ -12,7 +12,7 @@ import { JournalEntry } from '@/types/journal';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { useEffect, useRef, useState } from 'react';
-import { Alert, Pressable, ScrollView, useColorScheme } from 'react-native';
+import { Alert, Pressable, ScrollView, TextInput, useColorScheme } from 'react-native';
 import { useAuth } from '../../context/authContext';
 import { useJournal } from '../../context/journalContext';
 
@@ -26,6 +26,9 @@ const Journal = () => {
   const [filter, setFilter] = useState('all');
   const [openDropdown, setOpenDropdown] = useState<null | 'moods' | 'tags'>(null);
 
+  const [isSearching, setIsSearching] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
+
   const handlePress = (f: string) => {
     const key = f.toLowerCase() as typeof filter;
     if (key === 'moods' || key === 'tags') {
@@ -37,7 +40,7 @@ const Journal = () => {
   };
 
   useEffect(() => {
-    if (!user?.uid || entries.length > 0) {
+    if (!user?.uid) {
       return;
     }
 
@@ -48,7 +51,7 @@ const Journal = () => {
     };
 
     init();
-  }, [user?.uid, entries.length, fetchInitial]);
+  }, [user?.uid, fetchInitial]);
 
   const debouncedFetchMore = useRef<() => void>(() => { });
 
@@ -66,18 +69,18 @@ const Journal = () => {
     if (filter === 'favorites') {
       filteredEntries = entries.filter(e => !!e.favouritedAt);
     } else if (filter.startsWith('mood-')) {
-      filteredEntries = entries.filter(
-        e => energyLevels?.[e?.energy - 1]?.label.toLowerCase() === filter.slice(5)
-      );
+      filteredEntries = entries.filter(e => energyLevels?.[e?.energy - 1]?.label.toLowerCase() === filter.slice(5));
       setOpenDropdown(null);
     } else if (filter.startsWith('tag-')) {
       filteredEntries = entries.filter(e => e.tags.some(tag => tag === filter.slice(4)));
       setOpenDropdown(null);
+    } else if (filter === 'search') {
+      filteredEntries = entries.filter(e => e.content.includes(searchTerm));
     }
 
     setJournalEntries(filteredEntries);
     setLoading(false);
-  }, [filter, entries]);
+  }, [filter, searchTerm, entries]);
 
   const handleToggleFavourite = async (entryId: string) => {
     if (!user?.uid) return;
@@ -127,16 +130,33 @@ const Journal = () => {
     <ThemedView style={{ flex: 1, backgroundColor: colorScheme === 'light' ? '#fafaf9' : '#1f1f1f' }}>
       {/* Header */}
       <ThemedView style={{ paddingTop: 48, paddingHorizontal: 24, paddingBottom: 16, backgroundColor: colorScheme === 'light' ? '#ffffff' : '#262626', borderBottomWidth: 1, borderBottomColor: colorScheme === 'light' ? '#e7e5e4' : '#3f3f46' }}>
-        <ThemedView style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16, backgroundColor: 'transparent' }}>
-          <ThemedText type="title">Journal</ThemedText>
-
-          <Pressable style={{ width: 40, height: 40, borderRadius: 20, backgroundColor: colorScheme === 'light' ? '#e7e5e4' : '#3f3f46', alignItems: 'center', justifyContent: 'center' }}>
-            <Ionicons name="search" size={20} color={colorScheme === 'light' ? '#44403c' : '#e5e7eb'} />
+        <ThemedView style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 16, backgroundColor: "transparent" }}>
+          {!isSearching ? (
+            <ThemedText type="title" style={{ flex: 1 }}>Journal</ThemedText>
+          ) : (
+            <ThemedView style={{ flex: 1, position: "relative", backgroundColor: 'transparent' }}>
+              <TextInput
+                value={searchTerm}
+                onChangeText={setSearchTerm}
+                placeholder="Search entries..."
+                style={{ width: "100%", paddingVertical: 8, paddingHorizontal: 16, paddingRight: 40, borderRadius: 9999, backgroundColor: colorScheme === "light" ? "#f3f4f6" : "#3f3f46", color: colorScheme === "light" ? "#1f2937" : "#e5e7eb" }}
+              />
+              {searchTerm ? <Pressable onPress={() => setSearchTerm('')} style={{ position: "absolute", right: 12, top: "50%", transform: [{ translateY: -8 }] }} accessibilityLabel="Clear search"><Ionicons name="close" size={16} color={colorScheme === "light" ? "#9ca3af" : "#d4d4d8"} /></Pressable> : null}
+            </ThemedView>
+          )}
+          <Pressable onPress={() => {
+            setIsSearching(prev => !prev);
+            setFilter('search');
+          }
+          }
+            style={{ width: 40, height: 40, borderRadius: 20, backgroundColor: colorScheme === "light" ? "#e7e5e4" : "#3f3f46", alignItems: "center", justifyContent: "center", marginLeft: 8 }}
+          >
+            <Ionicons name="search" size={20} color={isSearching ? '#10b981' : colorScheme === "light" ? "#44403c" : "#e5e7eb"} />
           </Pressable>
         </ThemedView>
 
         {/* Filters */}
-        <ThemedView style={{ flexDirection: 'row', gap: 8, backgroundColor: 'transparent' }}>
+        {!isSearching && <ThemedView style={{ flexDirection: 'row', gap: 8, backgroundColor: 'transparent' }}>
           {['All', 'Favorites', 'Moods', 'Tags'].map(f => <ThemedView key={f} style={{ backgroundColor: 'transparent' }}>
             <Pressable
               onPress={() => handlePress(f.toLowerCase())}
@@ -171,7 +191,7 @@ const Journal = () => {
             )}
           </ThemedView>
           )}
-        </ThemedView>
+        </ThemedView>}
       </ThemedView>
 
       {/* Entries */}
@@ -194,7 +214,9 @@ const Journal = () => {
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ padding: 24, gap: 16 }}
       >
-        {journalEntries.map((entry) => (
+        {journalEntries.length === 0 && entries.length !== 0 ? <ThemedText style={{ textAlign: 'center', fontSize: 12, color: colorScheme === 'light' ? 'rgba(0,0,0,0.4)' : 'rgba(255,255,255,0.4)', marginVertical: 8 }}>
+          No entries found
+        </ThemedText> : journalEntries.map((entry) => (
           <ThemedView
             key={entry.id}
             style={{ backgroundColor: colorScheme === 'light' ? '#ffffff' : '#262626', borderRadius: 16, padding: 20, paddingTop: 12, borderWidth: 1, borderColor: colorScheme === 'light' ? '#e7e5e4' : '#3f3f46' }}
