@@ -373,7 +373,7 @@ const TimeCapsule = () => {
               mainText="The beginning of your journey, start today"
               buttonText="Add Memory"
               colorScheme={colorScheme as 'light' | 'dark'}
-              onPress={() => router.replace('/(detail)/journalEntry')}
+              onPress={() => router.push('/(detail)/journalEntry')}
             />}
           </ThemedView>
         </>}
@@ -396,7 +396,7 @@ const TimeCapsule = () => {
                 mainText="Track your energy by writing a new journal entry"
                 buttonText="Add Entry"
                 colorScheme={colorScheme as 'light' | 'dark'}
-                onPress={() => router.replace('/(detail)/journalEntry')}
+                onPress={() => router.push('/(detail)/journalEntry')}
               />
             ) : <>
               {/* Chart Card */}
@@ -490,7 +490,7 @@ const TimeCapsule = () => {
                   mainText="Start tagging your thoughts and experiences today"
                   buttonText="Add Entry"
                   colorScheme={colorScheme as 'light' | 'dark'}
-                  onPress={() => router.replace('/(detail)/journalEntry')}
+                  onPress={() => router.push('/(detail)/journalEntry')}
                 />
               ) : <>
                 {/* Bar Chart */}
@@ -589,7 +589,7 @@ const TimeCapsule = () => {
                 mainText="Your favourites will appear here—create an entry to get started"
                 buttonText="Add Entry"
                 colorScheme={colorScheme as 'light' | 'dark'}
-                onPress={() => router.replace('/(detail)/journalEntry')}
+                onPress={() => router.push('/(detail)/journalEntry')}
               />
             ) : <>
               {entries.filter(e => e.favouritedAt).map(entry => (

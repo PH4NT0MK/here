@@ -1,6 +1,6 @@
 import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
 import * as NavigationBar from 'expo-navigation-bar';
-import { Slot, useRouter } from 'expo-router';
+import { Stack, useRouter } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect } from 'react';
@@ -44,8 +44,12 @@ const RootNavigation = () => {
 
   return (
     <ThemeProvider value={scheme === 'dark' ? DarkTheme : DefaultTheme}>
+      <Stack screenOptions={{ headerShown: false }}>
+        <Stack.Screen name="(auth)" />
+        <Stack.Screen name="(main)" />
+        <Stack.Screen name="(detail)" />
+      </Stack>
       <StatusBar style="auto" />
-      <Slot />
     </ThemeProvider>
   );
 };

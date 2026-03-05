@@ -256,7 +256,7 @@ const Journal = () => {
           mainText={getRandomJournalPrompt()}
           buttonText="Write Entry"
           colorScheme={colorScheme as 'light' | 'dark'}
-          onPress={() => router.replace('/(detail)/journalEntry')}
+          onPress={() => router.push('/(detail)/journalEntry')}
         />}
       </ScrollView>
 
