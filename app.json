@@ -18,7 +18,7 @@
       },
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false,
-      "package": "com.anonymous.here"
+      "package": "com.ph4nt0mk.here"
     },
     "web": {
       "output": "static",

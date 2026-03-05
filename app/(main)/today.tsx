@@ -1,7 +1,10 @@
+import ActionCard from '@/components/ActionCard';
 import ParallaxScrollView from '@/components/parallax-scroll-view';
 import { Spinner } from '@/components/spinner';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
+import { getRandomHabitMessage } from '@/constants/habits';
+import { getRandomJournalPrompt } from '@/constants/journals';
 import { defaultQuotes } from '@/constants/quotes';
 import { getCoverImage } from '@/services/customPhoto';
 import { toggleCompleteToday } from '@/services/habit';
@@ -10,7 +13,7 @@ import { truncate } from '@/services/utils';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Dimensions, Image, TouchableOpacity, useColorScheme } from 'react-native';
 import { useAuth } from '../../context/authContext';
 import { useHabits } from '../../context/habitContext';
@@ -60,7 +63,7 @@ const Today = () => {
       )
     );
 
-    setProgressValue((habits.filter(h => isCompletedToday(h.completedAt, h.frequency)).length / habits.length) * 100);
+    setProgressValue(habits.length > 0 ? (habits.filter(h => isCompletedToday(h.completedAt, h.frequency)).length / habits.length) * 100 : 0);
   };
 
   const { width } = Dimensions.get('window');
@@ -90,7 +93,7 @@ const Today = () => {
   }, [user, refreshHabits]);
 
   useEffect(() => {
-    setProgressValue((habits.filter(h => isCompletedToday(h.completedAt, h.frequency)).length / habits.length) * 100);
+    setProgressValue(habits.length > 0 ? (habits.filter(h => isCompletedToday(h.completedAt, h.frequency)).length / habits.length) * 100 : 0);
   }, [habits]);
 
   if (loading) {
@@ -149,7 +152,7 @@ const Today = () => {
               <Ionicons name='flame' size={20} color='#f97316' />
             </ThemedView>
             <ThemedText style={{ fontSize: 20, fontWeight: '700', color: colorScheme === 'light' ? '#292524' : '#fafaf9' }}>
-              47
+              {Math.max(0, ...habits.map(h => h.currentStreak))}
             </ThemedText>
             <ThemedText
               style={{
@@ -209,6 +212,16 @@ const Today = () => {
 
         {/* Daily Habits */}
         <ThemedView style={{ gap: 12 }}>
+          {habits.length === 0 && (
+            <ActionCard
+              topLabel="Habits"
+              topIcon="list-outline"
+              mainText={getRandomHabitMessage()}
+              buttonText="Add Habit"
+              colorScheme={colorScheme as 'light' | 'dark'}
+              onPress={() => router.push('/(detail)/habitEntry')}
+            />
+          )}
           {habits.map(habit => {
             const completedToday = isCompletedToday(habit.completedAt, habit.frequency);
 
@@ -269,37 +282,15 @@ const Today = () => {
         </ThemedView>
 
         {/* Quick Journal */}
-        <ThemedView
-          style={{
-            backgroundColor: colorScheme === 'light' ? '#292524' : '#0f0f0e',
-            borderRadius: 24,
-            padding: 24,
-            overflow: 'hidden',
-            position: 'relative',
-          }}
-        >
-          <ThemedView style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 8, backgroundColor: 'transparent' }}>
-            <Ionicons name='chatbubble-outline' size={18} color='#10b981' />
-            <ThemedText style={{ fontSize: 10, fontWeight: '700', textTransform: 'uppercase', letterSpacing: 1, color: '#10b981' }}>
-              Reflection
-            </ThemedText>
-          </ThemedView>
-
-          <ThemedText style={{ fontSize: 16, fontWeight: '500', color: '#ffffff', marginBottom: 12 }}>
-            What made you smile today?
-          </ThemedText>
-
-          <TouchableOpacity
-            onPress={() => router.replace('/(main)/journal')}
-            style={{ paddingVertical: 8, paddingHorizontal: 16, borderRadius: 12, backgroundColor: 'rgba(255,255,255,0.1)' }}
-          >
-            <ThemedText style={{ fontSize: 12, fontWeight: '500', color: '#ffffff' }}>
-              Write Entry
-            </ThemedText>
-          </TouchableOpacity>
-        </ThemedView>
+        <ActionCard
+          topLabel="Reflection"
+          topIcon="chatbubble-outline"
+          mainText={getRandomJournalPrompt()}
+          buttonText="Write Entry"
+          colorScheme={colorScheme as 'light' | 'dark'}
+          onPress={() => router.replace('/(detail)/journalEntry')}
+        />
       </ThemedView>
-
 
     </ParallaxScrollView>
   );

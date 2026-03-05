@@ -7,7 +7,7 @@ import { formatJournalDate, truncate } from '@/services/utils';
 import { JournalEntry } from '@/types/journal';
 import { Ionicons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
-import { useLocalSearchParams } from 'expo-router';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import React, { useEffect, useRef, useState } from "react";
 import { Alert, Pressable, ScrollView, TextInput, useColorScheme } from "react-native";
 import { useAuth } from '../../context/authContext';
@@ -70,6 +70,8 @@ const JournalEntryScreen = () => {
     setAddingTag(false);
   };
 
+  const router = useRouter();
+
   const handleSave = async () => {
     if (!user?.uid) {
       return;
@@ -107,7 +109,7 @@ const JournalEntryScreen = () => {
       );
     }
 
-    navigation.goBack();
+    router.replace('/(main)/journal');
   };
 
   const now = new Date();

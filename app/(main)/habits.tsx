@@ -1,6 +1,8 @@
+import ActionCard from '@/components/ActionCard';
 import { Spinner } from '@/components/spinner';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
+import { getRandomHabitMessage } from '@/constants/habits';
 import { toggleCompleteToday } from '@/services/habit';
 import { calculateStreaks, isCompletedToday } from '@/services/streak';
 import { truncate } from '@/services/utils';
@@ -38,8 +40,8 @@ const Habits = () => {
   }, [user, refreshHabits]);
 
   if (loading) {
-      return <Spinner />;
-    }
+    return <Spinner />;
+  }
 
   return (
     <ThemedView style={{ flex: 1, backgroundColor: colorScheme === 'light' ? '#fafaf9' : '#1f1f1f' }}>
@@ -50,9 +52,14 @@ const Habits = () => {
 
       {/* Habits List */}
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ padding: 24, gap: 12 }}>
-        {(loading || !habits) ? <>
-          {/* <LoadingIndicator /> */}
-        </> : habits.map((habit) => {
+        {(!habits || !habits?.length) ? <ActionCard
+          topLabel="Habits"
+          topIcon="list-outline"
+          mainText={getRandomHabitMessage()}
+          buttonText="Add Habit"
+          colorScheme={colorScheme as 'light' | 'dark'}
+          onPress={() => router.push('/(detail)/habitEntry')}
+        /> : habits.map((habit) => {
           const completedToday = isCompletedToday(habit.completedAt, habit.frequency);
 
           return (
@@ -93,9 +100,9 @@ const Habits = () => {
                 </ThemedView>
 
               </ThemedView>
-                <ThemedView style={{ marginLeft: 'auto', marginRight: 0, paddingHorizontal: 12, paddingVertical: 4, borderRadius: 999, backgroundColor: colorScheme === 'light' ? '#f5f5f4' : '#3f3f46' }}>
-                  <ThemedText style={{ fontSize: 12, fontWeight: '500', color: colorScheme === 'light' ? '#57534e' : '#10b981' }}>Details</ThemedText>
-                </ThemedView>
+              <ThemedView style={{ marginLeft: 'auto', marginRight: 0, paddingHorizontal: 12, paddingVertical: 4, borderRadius: 999, backgroundColor: colorScheme === 'light' ? '#f5f5f4' : '#3f3f46' }}>
+                <ThemedText style={{ fontSize: 12, fontWeight: '500', color: colorScheme === 'light' ? '#57534e' : '#10b981' }}>Details</ThemedText>
+              </ThemedView>
             </Pressable>
           );
         })}

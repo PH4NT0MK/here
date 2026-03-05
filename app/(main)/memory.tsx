@@ -1,3 +1,4 @@
+import ActionCard from '@/components/ActionCard';
 import { Spinner } from '@/components/spinner';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
@@ -92,19 +93,22 @@ const TimeCapsule = () => {
     }
   };
 
+  const [hasFetched, setHasFetched] = useState(false);
+
   useEffect(() => {
-    if (!user?.uid) return;
+    if (!user?.uid || hasFetched) return;
 
     const init = async () => {
       if (!entries || entries.length === 0) {
         await fetchInitial(user.uid);
       }
 
+      setHasFetched(true);
       setLoading(false);
     };
 
     init();
-  }, [user, entries, fetchInitial]);
+  }, [user, entries, fetchInitial, hasFetched]);
 
   const [tab, setTab] = useState('memories');
 
@@ -112,7 +116,7 @@ const TimeCapsule = () => {
     { id: 'memories', label: 'Memories', icon: 'book-outline' },
     { id: 'energy', label: 'Energy', icon: 'battery-charging-outline' },
     { id: 'tags', label: 'Tags', icon: 'pricetag-outline' },
-    { id: 'streaks', label: 'Streaks', icon: 'flame-outline' },
+    // { id: 'streaks', label: 'Streaks', icon: 'flame-outline' },
     { id: 'favourites', label: 'Favourites', icon: 'heart-outline' }
   ];
 
@@ -286,9 +290,12 @@ const TimeCapsule = () => {
 
           {/* Timeline Section */}
           <ThemedView style={{ paddingHorizontal: 24, marginTop: 16, backgroundColor: 'transparent' }}>
-            <ThemedView style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 12, backgroundColor: 'transparent' }}>
-              <Ionicons name="calendar-outline" size={16} color={colorScheme === 'light' ? '#78716c' : '#a1a1aa'} />
-              <ThemedText style={{ fontSize: 12, fontWeight: '700', color: colorScheme === 'light' ? '#78716c' : '#a1a1aa', textTransform: 'uppercase', letterSpacing: 1 }}>Your Journey</ThemedText>
+            {/* Header */}
+            <ThemedView style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 16, backgroundColor: 'transparent' }}>
+              <Ionicons name="calendar-outline" size={20} color={colorScheme === 'light' ? '#10b981' : '#22c55e'} />
+              <ThemedText style={{ fontWeight: '700', fontSize: 18, color: colorScheme === 'light' ? '#1c1917' : '#fafafa' }}>
+                Your Journey
+              </ThemedText>
             </ThemedView>
 
             <ThemedView style={{ paddingLeft: 12, position: 'relative', backgroundColor: 'transparent' }}>
@@ -358,7 +365,16 @@ const TimeCapsule = () => {
               ))}
             </ThemedView>
 
-            {lastVisible === null && <ThemedText style={{ fontSize: 10, color: colorScheme === 'light' ? '#78716c' : '#a1a1aa', textAlign: 'center', paddingVertical: 12 }}>End of timeline</ThemedText>}
+            {lastVisible === null && entries?.length !== 0 ? <ThemedText style={{ fontSize: 10, color: colorScheme === 'light' ? '#78716c' : '#a1a1aa', textAlign: 'center', paddingVertical: 12 }}>
+              End of timeline
+            </ThemedText> : <ActionCard
+              topLabel="Memory"
+              topIcon="book-outline"
+              mainText="The beginning of your journey, start today"
+              buttonText="Add Memory"
+              colorScheme={colorScheme as 'light' | 'dark'}
+              onPress={() => router.replace('/(detail)/journalEntry')}
+            />}
           </ThemedView>
         </>}
 
@@ -373,107 +389,25 @@ const TimeCapsule = () => {
               </ThemedText>
             </ThemedView>
 
-            {/* Chart Card */}
-            <ThemedView style={{ backgroundColor: colorScheme === 'light' ? '#ffffff' : '#262626', marginBottom: 24, paddingVertical: 12, borderRadius: 24, borderWidth: 1, borderColor: colorScheme === 'light' ? '#e7e5e4' : '#3f3f46', alignItems: 'center' }}>
-              <ThemedView
-                style={{ alignSelf: 'center', backgroundColor: 'transparent' }}
-              >
-                {loadingChart ? <Spinner /> : <BarChart
-                  data={energyData.map(item => ({
-                    value: item.count,
-                    label: levels[item.value].slice(0, 4),
-                    frontColor: item.count > 0 ? '#10b981' : colorScheme === 'light' ? '#e5e5e5' : '#3f3f46',
-                  }))}
-                  barWidth={20}
-                  barBorderRadius={4}
-                  maxValue={maxValue}
-                  noOfSections={maxValue < 5 ? maxValue : 5}
-                  spacing={16}
-                  height={160}
-                  hideRules
-                  rulesColor={colorScheme === 'light' ? 'rgba(0,0,0,0.05)' : 'rgba(255,255,255,0.1)'}
-                  yAxisThickness={0}
-                  xAxisThickness={0}
-                  yAxisTextStyle={{ color: colorScheme === 'light' ? '#78716c' : '#a1a1aa', fontSize: 12 }}
-                  xAxisLabelTextStyle={{ color: colorScheme === 'light' ? '#78716c' : '#a1a1aa' }}
-                />}
-              </ThemedView>
-            </ThemedView>
-
-            <ThemedView style={{ gap: 12, backgroundColor: 'transparent' }}>
-              {energyData.map((item, i) => (
-                <ThemedView
-                  key={item.value}
-                  style={{
-                    flexDirection: 'row',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
-                    backgroundColor: colorScheme === 'light' ? '#ffffff' : '#262626',
-                    padding: 16,
-                    borderRadius: 16,
-                    borderWidth: 1,
-                    borderColor: colorScheme === 'light' ? '#e7e5e4' : '#3f3f46',
-                  }}
-                >
-                  <ThemedView style={{ flexDirection: 'row', alignItems: 'center', gap: 12, backgroundColor: 'transparent' }}>
-                    <ThemedView
-                      style={{
-                        width: 32,
-                        height: 32,
-                        borderRadius: 16,
-                        backgroundColor: '#d1fae5',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                      }}
-                    >
-                      <ThemedText style={{ fontSize: 12, fontWeight: '700', color: '#065f46', backgroundColor: 'transparent' }}>
-                        {/* {i + 1} */}
-                        {item.value}
-                      </ThemedText>
-                    </ThemedView>
-                    <ThemedText style={{ fontSize: 14, fontWeight: '500', color: colorScheme === 'light' ? '#1c1917' : '#fafafa', backgroundColor: 'transparent' }}>
-                      {levels[item.value]}
-                    </ThemedText>
-                  </ThemedView>
-                  <ThemedText style={{ fontSize: 12, fontWeight: '700', color: '#10b981' }}>
-                    {item.count}×
-                  </ThemedText>
-                </ThemedView>
-              ))}
-            </ThemedView>
-
-          </ScrollView>
-        )}
-
-        {tab === 'tags' && (
-          <ScrollView contentContainerStyle={{ padding: 24 }}>
-            <ThemedView style={{ marginBottom: 24, backgroundColor: 'transparent' }}>
-              {/* Header */}
-              <ThemedView style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 16, backgroundColor: 'transparent' }}>
-                <Ionicons name="pricetag-outline" size={20} color={colorScheme === 'light' ? '#10b981' : '#22c55e'} />
-                <ThemedText style={{ fontWeight: '700', fontSize: 18, color: colorScheme === 'light' ? '#1c1917' : '#fafafa' }}>
-                  Tag Frequency
-                </ThemedText>
-              </ThemedView>
-
-              {/* Bar Chart */}
-              <ThemedView
-                style={{
-                  backgroundColor: colorScheme === 'light' ? '#ffffff' : '#262626',
-                  padding: 16,
-                  borderRadius: 24,
-                  borderWidth: 1,
-                  borderColor: colorScheme === 'light' ? '#e7e5e4' : '#3f3f46',
-                  marginBottom: 24,
-                }}
-              >
+            {entries.length === 0 ? (
+              <ActionCard
+                topLabel="Energy"
+                topIcon="flash-outline"
+                mainText="Track your energy by writing a new journal entry"
+                buttonText="Add Entry"
+                colorScheme={colorScheme as 'light' | 'dark'}
+                onPress={() => router.replace('/(detail)/journalEntry')}
+              />
+            ) : <>
+              {/* Chart Card */}
+              <ThemedView style={{ backgroundColor: colorScheme === 'light' ? '#ffffff' : '#262626', marginBottom: 24, paddingVertical: 12, borderRadius: 24, borderWidth: 1, borderColor: colorScheme === 'light' ? '#e7e5e4' : '#3f3f46', alignItems: 'center' }}>
                 <ThemedView
                   style={{ alignSelf: 'center', backgroundColor: 'transparent' }}
                 >
                   {loadingChart ? <Spinner /> : <BarChart
-                    data={tagData.map(item => ({
+                    data={energyData.map(item => ({
                       value: item.count,
-                      label: item.tag.slice(0, 4),
+                      label: levels[item.value].slice(0, 4),
                       frontColor: item.count > 0 ? '#10b981' : colorScheme === 'light' ? '#e5e5e5' : '#3f3f46',
                     }))}
                     barWidth={20}
@@ -492,11 +426,10 @@ const TimeCapsule = () => {
                 </ThemedView>
               </ThemedView>
 
-              {/* Tag List */}
               <ThemedView style={{ gap: 12, backgroundColor: 'transparent' }}>
-                {tagData.map((tag, index) => (
+                {energyData.map((item, i) => (
                   <ThemedView
-                    key={tag.tag}
+                    key={item.value}
                     style={{
                       flexDirection: 'row',
                       alignItems: 'center',
@@ -519,48 +452,173 @@ const TimeCapsule = () => {
                           justifyContent: 'center',
                         }}
                       >
-                        <ThemedText style={{ fontSize: 12, fontWeight: '700', color: '#065f46', backgroundColor: 'transparent' }}>{index + 1}</ThemedText>
+                        <ThemedText style={{ fontSize: 12, fontWeight: '700', color: '#065f46', backgroundColor: 'transparent' }}>
+                          {/* {i + 1} */}
+                          {item.value}
+                        </ThemedText>
                       </ThemedView>
                       <ThemedText style={{ fontSize: 14, fontWeight: '500', color: colorScheme === 'light' ? '#1c1917' : '#fafafa', backgroundColor: 'transparent' }}>
-                        {tag.tag}
+                        {levels[item.value]}
                       </ThemedText>
                     </ThemedView>
-                    <ThemedText style={{ fontSize: 12, fontWeight: '700', color: '#10b981' }}>{tag.count}×</ThemedText>
+                    <ThemedText style={{ fontSize: 12, fontWeight: '700', color: '#10b981' }}>
+                      {item.count}×
+                    </ThemedText>
                   </ThemedView>
                 ))}
               </ThemedView>
+            </>}
+
+          </ScrollView>
+        )}
+
+        {tab === 'tags' && (
+          <ScrollView contentContainerStyle={{ padding: 24 }}>
+            <ThemedView style={{ marginBottom: 24, backgroundColor: 'transparent' }}>
+              {/* Header */}
+              <ThemedView style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 16, backgroundColor: 'transparent' }}>
+                <Ionicons name="pricetag-outline" size={20} color={colorScheme === 'light' ? '#10b981' : '#22c55e'} />
+                <ThemedText style={{ fontWeight: '700', fontSize: 18, color: colorScheme === 'light' ? '#1c1917' : '#fafafa' }}>
+                  Tag Frequency
+                </ThemedText>
+              </ThemedView>
+
+              {entries.length === 0 ? (
+                <ActionCard
+                  topLabel="Tags"
+                  topIcon="pricetag-outline"
+                  mainText="Start tagging your thoughts and experiences today"
+                  buttonText="Add Entry"
+                  colorScheme={colorScheme as 'light' | 'dark'}
+                  onPress={() => router.replace('/(detail)/journalEntry')}
+                />
+              ) : <>
+                {/* Bar Chart */}
+                <ThemedView
+                  style={{
+                    backgroundColor: colorScheme === 'light' ? '#ffffff' : '#262626',
+                    padding: 16,
+                    borderRadius: 24,
+                    borderWidth: 1,
+                    borderColor: colorScheme === 'light' ? '#e7e5e4' : '#3f3f46',
+                    marginBottom: 24,
+                  }}
+                >
+                  <ThemedView
+                    style={{ alignSelf: 'center', backgroundColor: 'transparent' }}
+                  >
+                    {loadingChart ? <Spinner /> : <BarChart
+                      data={tagData.map(item => ({
+                        value: item.count,
+                        label: item.tag.slice(0, 4),
+                        frontColor: item.count > 0 ? '#10b981' : colorScheme === 'light' ? '#e5e5e5' : '#3f3f46',
+                      }))}
+                      barWidth={20}
+                      barBorderRadius={4}
+                      maxValue={maxValue}
+                      noOfSections={maxValue < 5 ? maxValue : 5}
+                      spacing={16}
+                      height={160}
+                      hideRules
+                      rulesColor={colorScheme === 'light' ? 'rgba(0,0,0,0.05)' : 'rgba(255,255,255,0.1)'}
+                      yAxisThickness={0}
+                      xAxisThickness={0}
+                      yAxisTextStyle={{ color: colorScheme === 'light' ? '#78716c' : '#a1a1aa', fontSize: 12 }}
+                      xAxisLabelTextStyle={{ color: colorScheme === 'light' ? '#78716c' : '#a1a1aa' }}
+                    />}
+                  </ThemedView>
+                </ThemedView>
+
+                {/* Tag List */}
+                <ThemedView style={{ gap: 12, backgroundColor: 'transparent' }}>
+                  {tagData.map((tag, index) => (
+                    <ThemedView
+                      key={tag.tag}
+                      style={{
+                        flexDirection: 'row',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        backgroundColor: colorScheme === 'light' ? '#ffffff' : '#262626',
+                        padding: 16,
+                        borderRadius: 16,
+                        borderWidth: 1,
+                        borderColor: colorScheme === 'light' ? '#e7e5e4' : '#3f3f46',
+                      }}
+                    >
+                      <ThemedView style={{ flexDirection: 'row', alignItems: 'center', gap: 12, backgroundColor: 'transparent' }}>
+                        <ThemedView
+                          style={{
+                            width: 32,
+                            height: 32,
+                            borderRadius: 16,
+                            backgroundColor: '#d1fae5',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                          }}
+                        >
+                          <ThemedText style={{ fontSize: 12, fontWeight: '700', color: '#065f46', backgroundColor: 'transparent' }}>{index + 1}</ThemedText>
+                        </ThemedView>
+                        <ThemedText style={{ fontSize: 14, fontWeight: '500', color: colorScheme === 'light' ? '#1c1917' : '#fafafa', backgroundColor: 'transparent' }}>
+                          {tag.tag}
+                        </ThemedText>
+                      </ThemedView>
+                      <ThemedText style={{ fontSize: 12, fontWeight: '700', color: '#10b981' }}>{tag.count}×</ThemedText>
+                    </ThemedView>
+                  ))}
+                </ThemedView>
+              </>}
+
             </ThemedView>
           </ScrollView>
         )}
 
         {tab === 'favourites' && (
           <ScrollView contentContainerStyle={{ padding: 24, gap: 16 }}>
-            {entries.filter(e => e.favouritedAt).map(entry => (
-              <ThemedView key={entry.id} style={{ backgroundColor: colorScheme === 'light' ? '#fff7f8' : '#3f1f23', borderRadius: 16, padding: 20, paddingTop: 12, borderWidth: 1, borderColor: colorScheme === 'light' ? '#fbcfe8' : '#5a1f2b' }}>
-                <ThemedView style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8, backgroundColor: 'transparent' }}>
-                  <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ flexDirection: 'row', gap: 6, backgroundColor: 'transparent', paddingVertical: 4 }}>
-                    {[energyLevels[entry.energy - 1].label, ...(entry.tags || [])].map((tag, i) => (
-                      <ThemedView key={tag} style={{ backgroundColor: i === 0 ? energyLevels[entry.energy - 1].bgColor : colorScheme === 'light' ? '#f0fdf4' : '#064e3b', paddingHorizontal: 8, paddingVertical: 2, borderRadius: 6 }}>
-                        <ThemedText style={{ fontSize: 12, fontWeight: '600', color: i === 0 ? energyLevels[entry.energy - 1].textColor : '#10b981' }}>{tag}</ThemedText>
-                      </ThemedView>
-                    ))}
-                  </ScrollView>
-                  <ThemedView style={{ flexDirection: 'row', alignItems: 'center', gap: 4, backgroundColor: 'transparent', marginLeft: 6 }}>
-                    <Ionicons name="calendar-outline" size={12} color={colorScheme === 'light' ? '#78716c' : '#a1a1aa'} />
-                    <ThemedText style={{ fontSize: 12, color: colorScheme === 'light' ? '#78716c' : '#a1a1aa' }}>{formatJournalDate(entry.createdAt, true)}</ThemedText>
+            {/* Header */}
+            <ThemedView style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 16, backgroundColor: 'transparent' }}>
+              <Ionicons name="heart-outline" size={20} color={colorScheme === 'light' ? '#10b981' : '#22c55e'} />
+              <ThemedText style={{ fontWeight: '700', fontSize: 18, color: colorScheme === 'light' ? '#1c1917' : '#fafafa' }}>
+                Favourites
+              </ThemedText>
+            </ThemedView>
+
+            {entries.length === 0 ? (
+              <ActionCard
+                topLabel="Favourites"
+                topIcon="star-outline"
+                mainText="Your favourites will appear here—create an entry to get started"
+                buttonText="Add Entry"
+                colorScheme={colorScheme as 'light' | 'dark'}
+                onPress={() => router.replace('/(detail)/journalEntry')}
+              />
+            ) : <>
+              {entries.filter(e => e.favouritedAt).map(entry => (
+                <ThemedView key={entry.id} style={{ backgroundColor: colorScheme === 'light' ? '#fff7f8' : '#3f1f23', borderRadius: 16, padding: 20, paddingTop: 12, borderWidth: 1, borderColor: colorScheme === 'light' ? '#fbcfe8' : '#5a1f2b' }}>
+                  <ThemedView style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8, backgroundColor: 'transparent' }}>
+                    <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ flexDirection: 'row', gap: 6, backgroundColor: 'transparent', paddingVertical: 4 }}>
+                      {[energyLevels[entry.energy - 1].label, ...(entry.tags || [])].map((tag, i) => (
+                        <ThemedView key={tag} style={{ backgroundColor: i === 0 ? energyLevels[entry.energy - 1].bgColor : colorScheme === 'light' ? '#f0fdf4' : '#064e3b', paddingHorizontal: 8, paddingVertical: 2, borderRadius: 6 }}>
+                          <ThemedText style={{ fontSize: 12, fontWeight: '600', color: i === 0 ? energyLevels[entry.energy - 1].textColor : '#10b981' }}>{tag}</ThemedText>
+                        </ThemedView>
+                      ))}
+                    </ScrollView>
+                    <ThemedView style={{ flexDirection: 'row', alignItems: 'center', gap: 4, backgroundColor: 'transparent', marginLeft: 6 }}>
+                      <Ionicons name="calendar-outline" size={12} color={colorScheme === 'light' ? '#78716c' : '#a1a1aa'} />
+                      <ThemedText style={{ fontSize: 12, color: colorScheme === 'light' ? '#78716c' : '#a1a1aa' }}>{formatJournalDate(entry.createdAt, true)}</ThemedText>
+                    </ThemedView>
                   </ThemedView>
+                  <Pressable onPress={() => router.push({ pathname: '/(detail)/journalEntry', params: { id: entry.id } })}>
+                    <ThemedText numberOfLines={1} style={{ fontSize: 15, fontWeight: '600', marginBottom: 4, color: colorScheme === 'light' ? '#27272a' : '#fafafa' }}>{truncate(entry.content, 24)}</ThemedText>
+                    <ThemedView style={{ flexDirection: 'row', backgroundColor: 'transparent' }}>
+                      <ThemedText numberOfLines={4} style={{ flex: 1, fontSize: 14, lineHeight: 20, marginRight: 8, color: colorScheme === 'light' ? '#52525b' : '#d4d4d8' }}>{truncate(entry.content, 256)}</ThemedText>
+                      <Pressable onPress={() => handleToggleFavourite(entry.id)}>
+                        <Ionicons name={entry.favouritedAt ? 'heart' : 'heart-outline'} size={18} color={entry.favouritedAt ? '#ef4444' : colorScheme === 'light' ? '#a1a1aa' : '#71717a'} style={{ marginTop: 'auto' }} />
+                      </Pressable>
+                    </ThemedView>
+                  </Pressable>
                 </ThemedView>
-                <Pressable onPress={() => router.push({ pathname: '/(detail)/journalEntry', params: { id: entry.id } })}>
-                  <ThemedText numberOfLines={1} style={{ fontSize: 15, fontWeight: '600', marginBottom: 4, color: colorScheme === 'light' ? '#27272a' : '#fafafa' }}>{truncate(entry.content, 24)}</ThemedText>
-                  <ThemedView style={{ flexDirection: 'row', backgroundColor: 'transparent' }}>
-                    <ThemedText numberOfLines={4} style={{ flex: 1, fontSize: 14, lineHeight: 20, marginRight: 8, color: colorScheme === 'light' ? '#52525b' : '#d4d4d8' }}>{truncate(entry.content, 256)}</ThemedText>
-                    <Pressable onPress={() => handleToggleFavourite(entry.id)}>
-                      <Ionicons name={entry.favouritedAt ? 'heart' : 'heart-outline'} size={18} color={entry.favouritedAt ? '#ef4444' : colorScheme === 'light' ? '#a1a1aa' : '#71717a'} style={{ marginTop: 'auto' }} />
-                    </Pressable>
-                  </ThemedView>
-                </Pressable>
-              </ThemedView>
-            ))}
+              ))}
+            </>}
           </ScrollView>
         )}
 

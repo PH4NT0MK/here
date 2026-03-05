@@ -1,7 +1,9 @@
+import ActionCard from '@/components/ActionCard';
 import { Spinner } from '@/components/spinner';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { energyLevels } from '@/constants/energyLevels';
+import { getRandomJournalPrompt } from '@/constants/journals';
 import { defaultTags } from '@/constants/tags';
 import { debounce } from '@/services/debounce';
 import { toggleFavourite } from '@/services/journal';
@@ -59,18 +61,22 @@ const Journal = () => {
   }, [user?.uid, fetchMore]);
 
   useEffect(() => {
+    let filteredEntries = entries;
+
     if (filter === 'favorites') {
-      setJournalEntries(entries.filter(e => !!e.favouritedAt));
+      filteredEntries = entries.filter(e => !!e.favouritedAt);
     } else if (filter.startsWith('mood-')) {
-      setJournalEntries(entries.filter(e => energyLevels?.[e?.energy - 1]?.label.toLowerCase() === filter.slice(5)));
+      filteredEntries = entries.filter(
+        e => energyLevels?.[e?.energy - 1]?.label.toLowerCase() === filter.slice(5)
+      );
       setOpenDropdown(null);
     } else if (filter.startsWith('tag-')) {
-      setJournalEntries(entries.filter(e => e.tags.some(tag => tag === filter.slice(4))));
+      filteredEntries = entries.filter(e => e.tags.some(tag => tag === filter.slice(4)));
       setOpenDropdown(null);
-    } else {
-      setJournalEntries(entries);
-      setLoading(false);
     }
+
+    setJournalEntries(filteredEntries);
+    setLoading(false);
   }, [filter, entries]);
 
   const handleToggleFavourite = async (entryId: string) => {
@@ -242,9 +248,16 @@ const Journal = () => {
             </Pressable>
           </ThemedView>
         ))}
-        <ThemedText style={{ textAlign: 'center', fontSize: 12, color: colorScheme === 'light' ? 'rgba(0,0,0,0.4)' : 'rgba(255,255,255,0.4)', marginVertical: 8 }}>
-          {lastVisible === null && 'End of Entries'}
-        </ThemedText>
+        {lastVisible === null && entries?.length !== 0 ? <ThemedText style={{ textAlign: 'center', fontSize: 12, color: colorScheme === 'light' ? 'rgba(0,0,0,0.4)' : 'rgba(255,255,255,0.4)', marginVertical: 8 }}>
+          End of Entries
+        </ThemedText> : <ActionCard
+          topLabel="Reflection"
+          topIcon="chatbubble-outline"
+          mainText={getRandomJournalPrompt()}
+          buttonText="Write Entry"
+          colorScheme={colorScheme as 'light' | 'dark'}
+          onPress={() => router.replace('/(detail)/journalEntry')}
+        />}
       </ScrollView>
 
       {/* Floating Action Button */}

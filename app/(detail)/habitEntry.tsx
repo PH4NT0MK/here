@@ -6,7 +6,7 @@ import { addHabit, toggleCompleteToday, updateHabit } from "@/services/habit";
 import { calculateStreaks } from "@/services/streak";
 import { Habit, HabitFrequency } from "@/types/habit";
 import { Ionicons } from "@expo/vector-icons";
-import { useLocalSearchParams, useNavigation } from "expo-router";
+import { useLocalSearchParams, useNavigation, useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
 import { Alert, Pressable, ScrollView, TextInput, useColorScheme, } from "react-native";
 import { BarChart } from "react-native-gifted-charts";
@@ -85,6 +85,8 @@ const HabitScreen = () => {
     }
   }, [id, habits]);
 
+  const router = useRouter();
+
   const handleSave = async () => {
     if (!user?.uid) {
       return;
@@ -112,7 +114,7 @@ const HabitScreen = () => {
     }
 
     setIsEditing(false);
-    navigation.goBack();
+    router.replace('/(main)/habits');
   };
 
   const getLast7DaysChartData = (completedAt: number[]) => {
@@ -183,7 +185,7 @@ const HabitScreen = () => {
           {isCreating ? "New Habit" : title}
         </ThemedText>
 
-        <Pressable onPress={() => navigation.goBack()} style={{ padding: 6 }}>
+        <Pressable onPress={() => isEditing ? setIsEditing(false) : navigation.goBack()} style={{ padding: 6 }}>
           <Ionicons name="close" size={22} color={isDark ? "#a1a1aa" : "#44403c"} />
         </Pressable>
       </ThemedView>
