@@ -5,7 +5,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { createUserWithEmailAndPassword } from 'firebase/auth';
 import { useState } from 'react';
-import { TextInput, TouchableOpacity, View } from 'react-native';
+import { KeyboardAvoidingView, Platform, TextInput, TouchableOpacity, View } from 'react-native';
 
 export default function SignUp() {
   const [email, setEmail] = useState('');
@@ -34,7 +34,11 @@ export default function SignUp() {
   };
 
   return (
-    <View style={{ flex: 1, justifyContent: 'center', paddingHorizontal: 32, backgroundColor: '#fafaf9' }}>
+    <KeyboardAvoidingView
+      style={{ flex: 1, justifyContent: 'center', paddingHorizontal: 32, backgroundColor: '#fafaf9' }}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      keyboardVerticalOffset={Platform.OS === 'ios' ? 60 : 80}
+    >
       {/* Header */}
       <View style={{ marginBottom: 40, alignItems: 'center' }}>
         <ThemedText style={{ fontSize: 30, fontWeight: '700', color: '#292524', marginBottom: 8 }}>
@@ -104,6 +108,6 @@ export default function SignUp() {
           Sign in
         </ThemedText>
       </ThemedText>
-    </View>
+    </KeyboardAvoidingView>
   );
 };

@@ -3,7 +3,7 @@ import { login } from '@/services/firebaseAuth';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { useState } from 'react';
-import { TextInput, TouchableOpacity, View } from 'react-native';
+import { KeyboardAvoidingView, Platform, TextInput, TouchableOpacity, View } from 'react-native';
 
 export default function SignIn() {
   const [email, setEmail] = useState('');
@@ -29,7 +29,11 @@ export default function SignIn() {
   };
 
   return (
-    <View style={{ flex: 1, justifyContent: 'center', paddingHorizontal: 32, backgroundColor: '#fafaf9' }}>
+    <KeyboardAvoidingView
+      style={{ flex: 1, justifyContent: 'center', paddingHorizontal: 32, backgroundColor: '#fafaf9' }}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      keyboardVerticalOffset={Platform.OS === 'ios' ? 60 : 80}
+    >
       {/* Header */}
       <View style={{ marginBottom: 40, alignItems: 'center' }}>
         <ThemedText style={{ fontSize: 30, fontWeight: '700', color: '#292524', marginBottom: 8 }}>
@@ -71,7 +75,7 @@ export default function SignIn() {
           <View style={{ flexDirection: 'row', alignItems: 'center', borderRadius: 12, borderWidth: 1, borderColor: '#e7e5e4', backgroundColor: '#ffffff', paddingHorizontal: 12 }}>
             <Ionicons name="lock-closed-outline" size={20} color="#a8a29e" style={{ marginRight: 8 }} />
             <TextInput
-            onChangeText={setPassword}
+              onChangeText={setPassword}
               placeholder="••••••••"
               secureTextEntry
               placeholderTextColor="#a8a29e"
@@ -102,6 +106,6 @@ export default function SignIn() {
           Create one
         </ThemedText>
       </ThemedText>
-    </View>
+    </KeyboardAvoidingView>
   );
 }
