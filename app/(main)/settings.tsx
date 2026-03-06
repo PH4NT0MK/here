@@ -1,19 +1,36 @@
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
+import { Profile, useAuth } from '@/context/authContext';
 import { saveCoverImage } from '@/services/customPhoto';
+import { setDisplayName } from '@/services/displayName';
 import { auth } from '@/services/firebaseConfig';
 import { Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 import { router } from 'expo-router';
 import { signOut } from 'firebase/auth';
-import React from 'react';
-import { Pressable, ScrollView, useColorScheme } from 'react-native';
+import React, { useState } from 'react';
+import { Pressable, ScrollView, TextInput, useColorScheme } from 'react-native';
 
 const Settings = () => {
+  const { profile, setProfile } = useAuth();
+
   const colorScheme = useColorScheme();
   // const [notifications, setNotifications] = useState(true);
   // const [checkInReminders, setCheckInReminders] = useState(true);
   // const [pixelTheme, setPixelTheme] = useState(false);
+
+  const [name, setName] = useState('');
+
+  const updateDisplayName = async (displayName: string) => {
+    if (!profile) return;
+
+    await setDisplayName(displayName);
+
+    setProfile((prev: Profile) => ({
+      ...prev,
+      displayName: displayName,
+    }));
+  };
 
   const handleLogout = async () => {
     try {
@@ -67,6 +84,35 @@ const Settings = () => {
               </ThemedView>
               <Switch value={notifications} onValueChange={setNotifications} trackColor={{ true: '#10b981', false: colorScheme === 'light' ? '#e5e7eb' : '#3f3f46' }} thumbColor={colorScheme === 'light' ? '#ffffff' : '#fafafa'} />
             </ThemedView> */}
+
+            <ThemedView style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: 16, borderBottomWidth: 1, borderBottomColor: colorScheme === 'light' ? '#f5f5f4' : '#3f3f46', backgroundColor: 'transparent' }}>
+
+              <ThemedView style={{ flexDirection: 'row', alignItems: 'center', gap: 12, backgroundColor: 'transparent' }}>
+
+                <ThemedView style={{ width: 32, height: 32, borderRadius: 16, backgroundColor: '#dbeafe', alignItems: 'center', justifyContent: 'center' }}>
+                  <Ionicons name="person-outline" size={16} color="#3b82f6" />
+                </ThemedView>
+
+                <ThemedText style={{ fontSize: 14, fontWeight: '500', color: colorScheme === 'light' ? '#292524' : '#fafafa' }}>
+                  Display Name
+                </ThemedText>
+
+              </ThemedView>
+
+              <TextInput
+                value={name}
+                onChangeText={setName}
+                onBlur={async () => {
+                  if (name.trim()) {
+                    await updateDisplayName(name);
+                  }
+                }}
+                placeholder="Name"
+                placeholderTextColor={colorScheme === 'light' ? '#a8a29e' : '#71717a'}
+                style={{ minWidth: 100, textAlign: 'right', fontSize: 14, color: colorScheme === 'light' ? '#292524' : '#fafafa' }}
+              />
+
+            </ThemedView>
 
             {/* Daily Check-in */}
             {/* <ThemedView style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: 16, borderBottomWidth: 1, borderBottomColor: colorScheme === 'light' ? '#f5f5f4' : '#3f3f46', backgroundColor: 'transparent' }}>
