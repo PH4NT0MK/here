@@ -96,6 +96,28 @@ const Today = () => {
     setProgressValue(habits.length > 0 ? (habits.filter(h => isCompletedToday(h.completedAt, h.frequency)).length / habits.length) * 100 : 0);
   }, [habits]);
 
+  const getGreeting = (name: string | undefined) => {
+    try {
+      const hour = new Date().getHours();
+
+      let greeting = "Hello";
+
+      if (hour >= 5 && hour < 12) {
+        greeting = "Good Morning";
+      } else if (hour >= 12 && hour < 17) {
+        greeting = "Good Afternoon";
+      } else if (hour >= 17 && hour < 21) {
+        greeting = "Good Evening";
+      } else {
+        greeting = "Good Night";
+      }
+
+      return `${greeting}${name ? `, ${name}` : ""}`;
+    } catch {
+      return `Hello${name ? `, ${name}` : ""}`;
+    }
+  };
+
   if (loading) {
     return <Spinner />;
   }
@@ -121,7 +143,7 @@ const Today = () => {
           {/* Overlay Text */}
           <ThemedView style={{ position: 'absolute', bottom: 64, left: 24, right: 24, backgroundColor: 'transparent' }}>
             <ThemedText style={{ fontSize: 18, fontWeight: '600', color: '#fafaf9', marginBottom: 4 }}>
-              Good Morning{profile?.displayName && `, ${profile.displayName}`}
+              {getGreeting(profile?.displayName)}
             </ThemedText>
             <ThemedText style={{ fontSize: 14, color: '#fafaf9' }}>
               {quotes[quoteIndex]}

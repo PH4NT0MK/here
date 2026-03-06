@@ -4,7 +4,7 @@ import { onAuthStateChanged, User } from 'firebase/auth';
 import { doc, getDoc } from 'firebase/firestore';
 import { createContext, useContext, useEffect, useState } from 'react';
 
-type Profile = {
+export type Profile = {
   createdAt: number;
   displayName: string;
   email: string;
@@ -19,12 +19,14 @@ type AuthContextType = {
   user: User | null;
   profile: Profile | null;
   loading: boolean;
+  setProfile: Function
 };
 
 const AuthContext = createContext<AuthContextType>({
   user: null,
   profile: null,
   loading: true,
+  setProfile: () => { }
 });
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
@@ -64,7 +66,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   return (
-    <AuthContext.Provider value={{ user, profile, loading }}>
+    <AuthContext.Provider value={{ user, profile, loading, setProfile }}>
       {children}
     </AuthContext.Provider>
   );
