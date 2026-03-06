@@ -29,13 +29,18 @@ const RootNavigation = () => {
       return;
     }
 
-    if (user) {
-      router.replace('/(main)/today');
-    } else {
-      router.replace('/(auth)/sign-in');
-    }
+    try {
+      if (user) {
+        router.replace('/(main)/today');
+      } else {
+        router.replace('/(auth)/sign-in');
+      }
 
-    SplashScreen.hideAsync();
+    } catch (e) {
+      console.error('Navigation error:', e);
+    } finally {
+      SplashScreen.hideAsync();
+    }
   }, [loading, user]);
 
   if (loading) {

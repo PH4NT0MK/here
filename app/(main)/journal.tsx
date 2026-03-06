@@ -47,7 +47,6 @@ const Journal = () => {
     const init = async () => {
       setLoading(true);
       await fetchInitial(user.uid);
-      setLoading(false);
     };
 
     init();
@@ -56,6 +55,7 @@ const Journal = () => {
 
   useEffect(() => {
     setJournalEntries(entries);
+    setLoading(false);
   }, [entries]);
 
   const debouncedFetchMore = useRef<() => void>(() => { });

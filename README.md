@@ -288,7 +288,7 @@ yarn start
 
 A functional build of the app can be downloaded here:
 
-[**Download Here.apk**](https://example.com/your-apk-link)
+[**Download Here.apk**](https://drive.google.com/file/d/1up7ZOpfIB70haW1x3mFDk9zFs_ckowoD/view?usp=drive_link)
 
 > Replace the link above with the actual URL to your built `.apk` file in your repository or hosting service.
 

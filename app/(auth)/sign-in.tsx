@@ -1,18 +1,27 @@
 import { ThemedText } from '@/components/themed-text';
 import { firebaseErrorMessages } from '@/constants/errors';
+import { useAuth } from '@/context/authContext';
 import { login } from '@/services/firebaseAuth';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { KeyboardAvoidingView, Platform, Pressable, TextInput, TouchableOpacity, View } from 'react-native';
 
 export default function SignIn() {
+  const { user } = useAuth();
+
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const [showPassword, setShowPassword] = useState(false);
+
+    useEffect(() => {
+    if (user) {
+      router.replace("/today");
+    }
+  }, [user]);
 
   const handleLogin = async () => {
     if (!email || !password) {

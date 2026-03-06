@@ -13,14 +13,24 @@ import { Platform } from 'react-native';
 // Use expoConfig.extra instead of manifest
 const { extra } = Constants.expoConfig || {};
 
+// const firebaseConfig = {
+//   apiKey: extra?.firebaseApiKey,
+//   authDomain: extra?.firebaseAuthDomain,
+//   projectId: extra?.firebaseProjectId,
+//   storageBucket: extra?.firebaseStorageBucket,
+//   messagingSenderId: extra?.firebaseMessagingSenderId,
+//   appId: extra?.firebaseAppId,
+//   measurementId: extra?.firebaseMeasurementId,
+// };
+
 const firebaseConfig = {
-  apiKey: extra?.firebaseApiKey,
-  authDomain: extra?.firebaseAuthDomain,
-  projectId: extra?.firebaseProjectId,
-  storageBucket: extra?.firebaseStorageBucket,
-  messagingSenderId: extra?.firebaseMessagingSenderId,
-  appId: extra?.firebaseAppId,
-  measurementId: extra?.firebaseMeasurementId,
+  apiKey: "AIzaSyDHu70MPE5NyYFhzmVEVd3u9zruJiD50lI",
+  authDomain: "here-a053d.firebaseapp.com",
+  projectId: "here-a053d",
+  storageBucket: "here-a053d.firebasestorage.app",
+  messagingSenderId: "375824437507",
+  appId: "1:375824437507:web:a322d926c71abbba615936",
+  measurementId: "G-T4NVZR31PY"
 };
 
 // Initialize Firebase
